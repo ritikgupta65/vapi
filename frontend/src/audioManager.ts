@@ -5,7 +5,6 @@
 export class AudioManager {
   private audioContext: AudioContext | null = null;
   private mediaStream: MediaStream | null = null;
-  private audioWorkletNode: AudioWorkletNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private isRecording = false;
 

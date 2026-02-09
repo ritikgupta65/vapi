@@ -2,7 +2,7 @@
  * Main App component - orchestrates the entire speech-to-speech UI.
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Message, TranscriptEvent, ConversationState } from './types';
 import { SpeechToSpeechAPI } from './api';
 import { AudioManager } from './audioManager';
