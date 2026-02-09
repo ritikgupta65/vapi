@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech-to-Speech AI Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .recording {
+            background: #f44336 !important;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 100px;
+            font-family: monospace;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Speech-to-Speech AI Test</h1>
+        
+        <!-- Test TTS -->
+        <div class="section">
+            <h2>1. Test Text-to-Speech (TTS)</h2>
+            <input type="text" id="ttsText" placeholder="Enter text to speak..." value="Hello! This is a test of the text to speech system.">
+            <button onclick="testTTS()">🔊 Speak</button>
+            <button onclick="testTTSEndpoint()">🔊 Test Endpoint</button>
+            <div id="ttsStatus"></div>
+        </div>
+
+        <!-- Test STT -->
+        <div class="section">
+            <h2>2. Test Speech-to-Text (STT)</h2>
+            <button id="recordBtn" onclick="toggleRecording()">🎤 Start Recording</button>
+            <div id="sttStatus"></div>
+            <div id="transcript"></div>
+        </div>
+
+        <!-- Test Chat -->
+        <div class="section">
+            <h2>3. Test Chat (LLM)</h2>
+            <input type="text" id="chatMessage" placeholder="Enter your message..." value="What is the capital of France?">
+            <button onclick="testChat()">💬 Send</button>
+            <div id="chatStatus"></div>
+            <textarea id="chatResponse" readonly></textarea>
+        </div>
+
+        <!-- Full Pipeline -->
+        <div class="section">
+            <h2>4. Full Speech-to-Speech Pipeline</h2>
+            <button id="s2sBtn" onclick="toggleSpeechToSpeech()">🎙️ Start Conversation</button>
+            <div id="s2sStatus"></div>
+            <div id="s2sTranscript"></div>
+            <div id="s2sResponse"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        // Test TTS
+        async function testTTS() {
+            const text = document.getElementById('ttsText').value;
+            const status = document.getElementById('ttsStatus');
+            
+            status.innerHTML = '<div class="status info">Generating speech...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/tts`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ text, format: 'base64' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Convert base64 to audio and play
+                    const audioData = atob(data.audio);
+                    const arrayBuffer = new ArrayBuffer(audioData.length);
+                    const view = new Uint8Array(arrayBuffer);
+                    for (let i = 0; i < audioData.length; i++) {
+                        view[i] = audioData.charCodeAt(i);
+                    }
+                    
+                    const audioContext = new AudioContext();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination);
+                    source.start(0);
+                    
+                    status.innerHTML = '<div class="status success">✅ Speech generated and playing!</div>';
+                } else {
+                    status.innerHTML = `<div class="status error">❌ Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testTTSEndpoint() {
+            const status = document.getElementById('ttsStatus');
+            status.innerHTML = '<div class="status info">Testing endpoint...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/test`);
+                const blob = await response.blob();
+                const audio = new Audio(URL.createObjectURL(blob));
+                audio.play();
+                status.innerHTML = '<div class="status success">✅ Playing test audio!</div>';
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test STT
+        async function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        async function startRecording() {
+            const status = document.getElementById('sttStatus');
+            const btn = document.getElementById('recordBtn');
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await transcribeAudio(audioBlob);
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                btn.textContent = '⏹️ Stop Recording';
+                btn.classList.add('recording');
+                status.innerHTML = '<div class="status info">🎤 Recording...</div>';
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function stopRecording() {
+            const btn = document.getElementById('recordBtn');
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            isRecording = false;
+            btn.textContent = '🎤 Start Recording';
+            btn.classList.remove('recording');
+        }
+
+        async function transcribeAudio(audioBlob) {
+            const status = document.getElementById('sttStatus');
+            const transcript = document.getElementById('transcript');
+            
+            status.innerHTML = '<div class="status info">Transcribing...</div>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob);
+                
+                const response = await fetch(`${API_URL}/stt`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    status.innerHTML = '<div class="status success">✅ Transcription complete!</div>';
+                    transcript.innerHTML = `<div class="status info"><strong>Transcript:</strong> ${data.transcript}</div>`;
+                } else {
+                    status.innerHTML = `<div class="status error">❌ Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Chat
+        async function testChat() {
+            const message = document.getElementById('chatMessage').value;
+            const status = document.getElementById('chatStatus');
+            const response = document.getElementById('chatResponse');
+            
+            status.innerHTML = '<div class="status info">Thinking...</div>';
+            
+            try {
+                const result = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: message }]
+                    })
+                });
+                
+                const data = await result.json();
+                
+                if (data.success) {
+                    status.innerHTML = '<div class="status success">✅ Response received!</div>';
+                    response.value = data.response;
+                } else {
+                    status.innerHTML = `<div class="status error">❌ Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Full Speech-to-Speech
+        let s2sRecorder;
+        let s2sChunks = [];
+        let s2sRecording = false;
+
+        async function toggleSpeechToSpeech() {
+            if (s2sRecording) {
+                stopS2S();
+            } else {
+                startS2S();
+            }
+        }
+
+        async function startS2S() {
+            const status = document.getElementById('s2sStatus');
+            const btn = document.getElementById('s2sBtn');
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                s2sRecorder = new MediaRecorder(stream);
+                s2sChunks = [];
+                
+                s2sRecorder.ondataavailable = (event) => {
+                    s2sChunks.push(event.data);
+                };
+                
+                s2sRecorder.onstop = async () => {
+                    const audioBlob = new Blob(s2sChunks, { type: 'audio/wav' });
+                    await processSpeechToSpeech(audioBlob);
+                };
+                
+                s2sRecorder.start();
+                s2sRecording = true;
+                btn.textContent = '⏹️ Stop & Process';
+                btn.classList.add('recording');
+                status.innerHTML = '<div class="status info">🎤 Recording your message...</div>';
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function stopS2S() {
+            const btn = document.getElementById('s2sBtn');
+            s2sRecorder.stop();
+            s2sRecorder.stream.getTracks().forEach(track => track.stop());
+            s2sRecording = false;
+            btn.textContent = '🎙️ Start Conversation';
+            btn.classList.remove('recording');
+        }
+
+        async function processSpeechToSpeech(audioBlob) {
+            const status = document.getElementById('s2sStatus');
+            const transcript = document.getElementById('s2sTranscript');
+            const response = document.getElementById('s2sResponse');
+            
+            status.innerHTML = '<div class="status info">Processing...</div>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob);
+                
+                const result = await fetch(`${API_URL}/speech-to-speech`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await result.json();
+                
+                if (data.success) {
+                    status.innerHTML = '<div class="status success">✅ Complete! Playing response...</div>';
+                    transcript.innerHTML = `<div class="status info"><strong>You said:</strong> ${data.transcript}</div>`;
+                    response.innerHTML = `<div class="status info"><strong>AI said:</strong> ${data.response}</div>`;
+                    
+                    // Play audio response
+                    const audioData = atob(data.audio);
+                    const arrayBuffer = new ArrayBuffer(audioData.length);
+                    const view = new Uint8Array(arrayBuffer);
+                    for (let i = 0; i < audioData.length; i++) {
+                        view[i] = audioData.charCodeAt(i);
+                    }
+                    
+                    const audioContext = new AudioContext();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination);
+                    source.start(0);
+                } else {
+                    status.innerHTML = `<div class="status error">❌ Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

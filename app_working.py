@@ -3,16 +3,8 @@ Flask-based Speech-to-Speech AI with Deepgram STT/TTS and OpenAI
 """
 import json
 import os
-import io
-import wave
-import struct
 import base64
-import time
-import uuid
-import subprocess
-import tempfile
-from datetime import datetime
-from flask import Flask, request, jsonify, Response, stream_with_context, send_file
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -22,15 +14,7 @@ try:
     DEEPGRAM_AVAILABLE = True
 except ImportError as e:
     DEEPGRAM_AVAILABLE = False
-    print(f"⚠️  Deepgram not installed. Run: pip install deepgram-sdk")
-
-try:
-    import imageio_ffmpeg
-    FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
-    FFMPEG_AVAILABLE = os.path.exists(FFMPEG_PATH)
-except Exception:
-    FFMPEG_PATH = 'ffmpeg'
-    FFMPEG_AVAILABLE = False
+    print(f"⚠️  Deepgram not installed. Run: pip install deepgram-sdk (Error: {e})")
 
 try:
     from openai import OpenAI
@@ -49,16 +33,7 @@ load_dotenv()
 # Configuration
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY", "6985219805a7076276962e72ee835d9bd9961747")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") or os.getenv("LLM_API_KEY")
-OPENAI_BASE_URL = os.getenv("LLM_BASE_URL")  # For Azure/GitHub Models inference
 DEFAULT_MODEL = os.getenv("LLM_DEFAULT_MODEL", "gpt-4o-mini")
-
-# Safe content filter (for Azure API compatibility)
-SAFE_CONTENT_FILTER = {
-    "hate": {"filtered": False, "severity": "safe"},
-    "self_harm": {"filtered": False, "severity": "safe"},
-    "sexual": {"filtered": False, "severity": "safe"},
-    "violence": {"filtered": False, "severity": "safe"},
-}
 
 # Initialize clients
 deepgram_client = None
@@ -75,52 +50,10 @@ else:
     print("❌ Deepgram not available")
 
 if OPENAI_AVAILABLE and OPENAI_API_KEY:
-    # Use custom base URL if provided (for Azure/GitHub Models)
-    if OPENAI_BASE_URL:
-        openai_client = OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
-        print(f"✅ OpenAI initialized with custom endpoint: {OPENAI_BASE_URL}")
-    else:
-        openai_client = OpenAI(api_key=OPENAI_API_KEY)
-        print("✅ OpenAI initialized")
+    openai_client = OpenAI(api_key=OPENAI_API_KEY)
+    print("✅ OpenAI initialized")
 else:
-    print("⚠️  OpenAI not available (optional)")
-
-# Show startup banner
-print("\n" + "="*50)
-print("🎙️  Speech-to-Speech AI Server")
-print("="*50)
-print(f"Deepgram: {'✅' if deepgram_client else '❌'}")
-print(f"OpenAI: {'✅' if openai_client else '❌'}")
-print("\nEndpoints:")
-print("  POST /stt              - Speech to Text")
-print("  POST /tts              - Text to Speech")
-print("  POST /chat             - LLM Chat")
-print("  POST /speech-to-speech - Full pipeline")
-print("  GET  /                 - Health check")
-print("="*50 + "\n")
-
-
-# -------------------------
-# SERVE FRONTEND
-# -------------------------
-@app.route("/app", methods=["GET"])
-def serve_frontend():
-    """Serve the index.html frontend"""
-    return send_file(os.path.join(os.path.dirname(__file__), "index.html"))
-
-
-# -------------------------
-# HEALTH CHECK
-# -------------------------
-@app.route("/", methods=["GET"])
-def home():
-    """Health check endpoint"""
-    return jsonify({
-        "status": "ok",
-        "message": "Speech-to-Speech AI Server",
-        "deepgram": "available" if deepgram_client else "not configured",
-        "openai": "available" if openai_client else "not configured"
-    })
+    print("❌ OpenAI not available")
 
 
 # -------------------------
@@ -131,103 +64,61 @@ def speech_to_text():
     """
     Convert speech to text using Deepgram.
     
-    Accepts:
-    - multipart/form-data with 'audio' file
-    - JSON with 'audio' as base64 string
-    - Raw audio bytes
+    Request body (JSON):
+    {
+        "audio": "base64-encoded audio data",
+        "mimetype": "audio/wav" (optional)
+    }
+    
+    Or send audio file directly as multipart/form-data
     """
     if not deepgram_client:
         return jsonify({"error": "Deepgram not configured"}), 500
     
     try:
-        # Get audio data from different sources
+        # Check if audio is sent as file or base64
         if 'audio' in request.files:
+            # Audio file upload
             audio_file = request.files['audio']
             audio_data = audio_file.read()
         elif request.is_json:
+            # Base64 encoded audio
             data = request.get_json()
             audio_base64 = data.get("audio")
-            if audio_base64:
-                audio_data = base64.b64decode(audio_base64)
-            else:
-                return jsonify({"error": "Missing 'audio' field in JSON"}), 400
+            if not audio_base64:
+                return jsonify({"error": "Missing 'audio' field"}), 400
+            audio_data = base64.b64decode(audio_base64)
         else:
+            # Raw audio bytes
             audio_data = request.data
         
         if not audio_data:
             return jsonify({"error": "No audio data provided"}), 400
         
-        # Debug: save received audio to inspect
-        debug_path = os.path.join(os.path.dirname(__file__), "debug_audio.bin")
-        with open(debug_path, "wb") as f:
-            f.write(audio_data)
+        # Configure Deepgram options (v5 SDK uses dict-based options)
+        options = {
+            "model": "nova-2",
+            "language": "en-US",
+            "smart_format": True,
+            "punctuate": True,
+            "diarize": False,
+        }
         
-        # Detect format from magic bytes
-        is_webm = audio_data[:4] == b'\x1a\x45\xdf\xa3'
-        is_wav = audio_data[:4] == b'RIFF'
-        is_ogg = audio_data[:4] == b'OggS'
-        print(f"[STT] Audio size: {len(audio_data)} bytes | webm={is_webm} wav={is_wav} ogg={is_ogg}")
+        # Send to Deepgram (v5 SDK - pass audio buffer directly)
+        payload = {"buffer": audio_data}
+        response = deepgram_client.listen.rest.v("1").transcribe_file(
+            payload,
+            options
+        )
         
-        # Convert webm/ogg to WAV if needed (browser audio often needs conversion)
-        if (is_webm or is_ogg) and FFMPEG_AVAILABLE:
-            print(f"[STT] Converting {('webm' if is_webm else 'ogg')} to WAV using ffmpeg...")
-            try:
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.webm') as tmp_in:
-                    tmp_in.write(audio_data)
-                    tmp_in_path = tmp_in.name
-                
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_out:
-                    tmp_out_path = tmp_out.name
-                
-                result = subprocess.run([
-                    FFMPEG_PATH, '-i', tmp_in_path,
-                    '-acodec', 'pcm_s16le',
-                    '-ar', '16000',
-                    '-ac', '1',
-                    '-f', 'wav',
-                    tmp_out_path,
-                    '-y'
-                ], capture_output=True, timeout=10)
-                
-                if result.returncode == 0 and os.path.exists(tmp_out_path):
-                    with open(tmp_out_path, 'rb') as f:
-                        audio_data = f.read()
-                    print(f"[STT] Converted to WAV: {len(audio_data)} bytes")
-                    is_wav = True
-                else:
-                    print(f"[STT] Conversion failed: {result.stderr[:200]}")
-                
-                # Cleanup
-                try:
-                    os.unlink(tmp_in_path)
-                    os.unlink(tmp_out_path)
-                except:
-                    pass
-                    
-            except Exception as conv_err:
-                print(f"[STT] Conversion error: {conv_err}")
-        
+        # Extract transcript
         transcript = ""
         confidence = 0.0
-        
-        # Use Deepgram SDK with the (potentially converted) audio
-        try:
-            response = deepgram_client.listen.v1.media.transcribe_file(
-                request=audio_data,
-                model="nova-2",
-                smart_format=True,
-                punctuate=True,
-            )
-            
-            if response and response.results and response.results.channels:
-                alternatives = response.results.channels[0].alternatives
-                if alternatives:
-                    transcript = alternatives[0].transcript
-                    confidence = getattr(alternatives[0], 'confidence', 0.0)
-            
-            print(f"[STT] Result: '{transcript}' (confidence: {confidence})")
-        except Exception as err:
-            print(f"[STT] Error: {err}")
+        if response and response.results and response.results.channels:
+            alternatives = response.results.channels[0].alternatives
+            if alternatives:
+                transcript = alternatives[0].transcript
+                confidence = alternatives[0].confidence if hasattr(alternatives[0], 'confidence') else 0.0
         
         return jsonify({
             "success": True,
@@ -267,50 +158,27 @@ def text_to_speech():
         if not text:
             return jsonify({"error": "Missing 'text' field"}), 400
         
-        print(f"[TTS] Generating speech for: '{text[:50]}...'")
-        
-        # Generate speech (v5 SDK - keyword args)
+        # Configure Deepgram TTS options (v5 SDK uses dict-based options)
         model = data.get("model", "aura-asteria-en")
         encoding = data.get("encoding", "linear16")
         
+        options = {
+            "model": model,
+            "encoding": encoding,
+            "sample_rate": 16000,
+        }
+        
+        # Generate speech (v5 SDK)
+        payload = {"text": text}
+        response = deepgram_client.speak.rest.v("1").stream(
+            payload,
+            options
+        )
+        
+        # Get audio data
         audio_data = b""
-        for chunk in deepgram_client.speak.v1.audio.generate(
-            text=text,
-            model=model,
-            encoding=encoding,
-            sample_rate=16000,
-        ):
+        for chunk in response.stream_memory:
             audio_data += chunk
-        
-        print(f"[TTS] Generated {len(audio_data)} bytes of audio")
-        
-        # Add WAV header if raw PCM (linear16 is raw PCM)
-        if encoding == "linear16" and not audio_data.startswith(b'RIFF'):
-            # Create WAV header for 16-bit mono 16kHz audio
-            sample_rate = 16000
-            num_channels = 1
-            bits_per_sample = 16
-            byte_rate = sample_rate * num_channels * bits_per_sample // 8
-            block_align = num_channels * bits_per_sample // 8
-            data_size = len(audio_data)
-            
-            wav_header = struct.pack('<4sI4s4sIHHIIHH4sI',
-                b'RIFF',
-                36 + data_size,
-                b'WAVE',
-                b'fmt ',
-                16,  # Subchunk1Size
-                1,   # AudioFormat (PCM)
-                num_channels,
-                sample_rate,
-                byte_rate,
-                block_align,
-                bits_per_sample,
-                b'data',
-                data_size
-            )
-            audio_data = wav_header + audio_data
-            print(f"[TTS] Added WAV header, total size: {len(audio_data)} bytes")
         
         # Return as base64 or raw
         return_format = data.get("format", "base64")
@@ -417,13 +285,18 @@ def speech_to_speech():
         else:
             audio_data = request.data
         
-        # Transcribe (v5 SDK - keyword args)
-        stt_response = deepgram_client.listen.v1.media.transcribe_file(
-            request=audio_data,
-            model="nova-2",
-            language="en-US",
-            smart_format=True,
-            punctuate=True,
+        # Transcribe (v5 SDK - dict-based options)
+        options = {
+            "model": "nova-2",
+            "language": "en-US",
+            "smart_format": True,
+            "punctuate": True,
+        }
+        
+        payload = {"buffer": audio_data}
+        stt_response = deepgram_client.listen.rest.v("1").transcribe_file(
+            payload,
+            options
         )
         
         transcript = ""
@@ -450,14 +323,21 @@ def speech_to_speech():
         
         ai_response = llm_response.choices[0].message.content
         
-        # Step 3: Text to Speech (v5 SDK - keyword args)
+        # Step 3: Text to Speech (v5 SDK - dict-based options)
+        speak_options = {
+            "model": "aura-asteria-en",
+            "encoding": "linear16",
+            "sample_rate": 16000,
+        }
+        
+        tts_payload = {"text": ai_response}
+        tts_response = deepgram_client.speak.rest.v("1").stream(
+            tts_payload,
+            speak_options
+        )
+        
         audio_data = b""
-        for chunk in deepgram_client.speak.v1.audio.generate(
-            text=ai_response,
-            model="aura-asteria-en",
-            encoding="linear16",
-            sample_rate=16000,
-        ):
+        for chunk in tts_response.stream_memory:
             audio_data += chunk
         
         audio_base64 = base64.b64encode(audio_data).decode('utf-8')
@@ -475,30 +355,54 @@ def speech_to_speech():
 
 
 # -------------------------
-# TEST TTS ENDPOINT
+# HEALTH CHECK
+# -------------------------
+@app.route("/", methods=["GET"])
+def home():
+    """Health check endpoint"""
+    return jsonify({
+        "status": "ok",
+        "services": {
+            "deepgram": deepgram_client is not None,
+            "openai": openai_client is not None
+        },
+        "endpoints": {
+            "stt": "/stt",
+            "tts": "/tts",
+            "chat": "/chat",
+            "speech_to_speech": "/speech-to-speech"
+        }
+    })
+
+
+# -------------------------
+# TEST ENDPOINT
 # -------------------------
 @app.route("/test", methods=["GET"])
-def test_tts():
-    """Test TTS with a simple message"""
+def test():
+    """Test TTS with sample text"""
     if not deepgram_client:
         return jsonify({"error": "Deepgram not configured"}), 500
     
     try:
-        text = "Hello! This is a test of the Deepgram text-to-speech system. The server is working correctly."
-        
-        audio_data = b""
-        for chunk in deepgram_client.speak.v1.audio.generate(
-            text=text,
+        options = SpeakOptions(
             model="aura-asteria-en",
             encoding="linear16",
             sample_rate=16000,
-        ):
+        )
+        
+        response = deepgram_client.speak.rest.v("1").stream(
+            {"text": "Hello! This is a test of the text to speech system."},
+            options
+        )
+        
+        audio_data = b""
+        for chunk in response.stream_memory:
             audio_data += chunk
         
         return audio_data, 200, {'Content-Type': 'audio/wav'}
     
     except Exception as e:
-        print(f"Test TTS Error: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -506,4 +410,17 @@ def test_tts():
 # RUN APP
 # -------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+    print("\n" + "="*50)
+    print("🎙️  Speech-to-Speech AI Server")
+    print("="*50)
+    print(f"Deepgram: {'✅' if deepgram_client else '❌'}")
+    print(f"OpenAI: {'✅' if openai_client else '❌'}")
+    print("\nEndpoints:")
+    print("  POST /stt              - Speech to Text")
+    print("  POST /tts              - Text to Speech")
+    print("  POST /chat             - LLM Chat")
+    print("  POST /speech-to-speech - Full pipeline")
+    print("  GET  /test             - Test TTS")
+    print("="*50 + "\n")
+    
+    app.run(debug=True, host="0.0.0.0", port=5000)

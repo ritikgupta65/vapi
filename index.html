@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Levi's Customer Support - Neha</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            background: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Left: Mic Section */
+        .mic-section {
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .mic-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .mic-button:hover { transform: scale(1.05); }
+
+        .mic-button.recording {
+            background: #c41230;
+            border-color: #c41230;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(196,18,48,0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(196,18,48,0); }
+        }
+
+        .mic-icon { width: 50px; height: 50px; transition: all 0.3s; }
+        .mic-button.recording .mic-icon { filter: brightness(0) invert(1); }
+
+        .status-text {
+            margin-top: 15px;
+            color: #333;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .status-text.recording { color: #c41230; font-weight: 600; }
+
+        /* Right: Chat Section */
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.interim {
+            align-self: flex-end;
+            background: #fff;
+            color: #999;
+            border: 1px dashed #ccc;
+            font-style: italic;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.thinking {
+            align-self: flex-start;
+            background: #fff;
+            color: #999;
+            border: 1px dashed #ccc;
+            font-style: italic;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            align-self: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="mic-section">
+            <button class="mic-button" id="micButton">
+                <svg class="mic-icon" id="micIcon" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 1C10.34 1 9 2.34 9 4V12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12V4C15 2.34 13.66 1 12 1Z" fill="#333"/>
+                    <path d="M17 11C17 13.76 14.76 16 12 16C9.24 16 7 13.76 7 11H5C5 14.53 7.61 17.43 11 17.92V21H13V17.92C16.39 17.43 19 14.53 19 11H17Z" fill="#333"/>
+                </svg>
+            </button>
+            <div class="status-text" id="statusText">Click to speak</div>
+        </div>
+
+        <div class="chat-section">
+            <div class="chat-header">Chat window :</div>
+            <div class="chat-messages" id="chatMessages"></div>
+        </div>
+    </div>
+
+    <script>
+        const SYSTEM_PROMPT = `You are Neha, a professional and friendly customer support representative for Levi's India — the world's most iconic denim brand.
+Your job is to help customers with order tracking, returns & exchanges, product questions, size & fit guidance, shipping, and payments.
+
+CORE BEHAVIOR:
+- ALWAYS ask for the customer's name first and use it respectfully throughout.
+- Opening: "Hello! Welcome to Levi's customer support. I'm Neha. May I please have your name so I can assist you better?"
+- After name: "Thank you, [Name]. How can I help you with your Levi's purchase today?"
+- Keep responses CONCISE (2-3 sentences max for voice).
+- Be confident, professional, knowledgeable about denim, helpful & authentic.
+
+KEY POLICIES:
+- Returns: 7-day return window, items unworn/unwashed/tags attached.
+- Final Sale/EOSS: Exchange only, no returns.
+- 6-month warranty on manufacturing defects.
+- Online orders cannot be returned at retail stores.
+- Shipping: 1-2 days processing, 3-7 days delivery.
+- Contact: customercare@levi.in / 1800-123-5384
+
+ESCALATION: For defects, complex billing, damaged/missing items — collect phone, email, order number and say a specialist will contact within 24 hours.`;
+
+        const API_BASE = 'http://localhost:5000';
+        const micButton = document.getElementById('micButton');
+        const statusText = document.getElementById('statusText');
+        const chatMessages = document.getElementById('chatMessages');
+
+        let isRecording = false;
+        let conversationHistory = [];
+        let currentAIAudio = null;
+        let isAISpeaking = false;
+        let aiPaused = false;      // True while recognition is paused for AI
+        let aiCooldown = false;    // Brief cooldown after AI stops to flush stale results
+        let interimDiv = null;
+        let silenceTimer = null;
+        let pendingLLM = false;
+        let hasGreeted = false;
+
+        const GREETING = "Hello! Welcome to Levi's customer support. I'm Neha. How can I help you?";
+
+        // ===================== SPEECH RECOGNITION =====================
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            let processedIndices = new Set();
+
+            recognition.onresult = (event) => {
+                // Block ALL input while AI is speaking or during cooldown
+                if (isAISpeaking || aiPaused || aiCooldown) return;
+
+                let currentInterim = '';
+
+                for (let i = 0; i < event.results.length; i++) {
+                    const result = event.results[i];
+                    const text = result[0].transcript.trim();
+
+                    if (result.isFinal && text && !processedIndices.has(i)) {
+                        processedIndices.add(i);
+                        removeInterim();
+
+                        // Display user message immediately
+                        addMessage(text, 'user');
+                        conversationHistory.push({ role: 'user', content: text });
+                        console.log('👤 User:', text);
+
+                        // Reset silence timer — wait for more sentences
+                        clearTimeout(silenceTimer);
+                        silenceTimer = setTimeout(() => {
+                            if (!pendingLLM) sendToLLM();
+                        }, 1200);
+
+                    } else if (!result.isFinal) {
+                        currentInterim += text;
+                    }
+                }
+
+                if (currentInterim && isRecording) {
+                    showInterim(currentInterim);
+                }
+            };
+
+            recognition.onend = () => {
+                processedIndices = new Set();
+                // Only auto-restart if recording AND not paused for AI
+                if (isRecording && !aiPaused) {
+                    try { recognition.start(); } catch(e) {}
+                }
+            };
+
+            recognition.onerror = (event) => {
+                if (event.error === 'no-speech' || event.error === 'aborted') return;
+                console.warn('Speech error:', event.error);
+            };
+        }
+
+        // ===================== MIC TOGGLE =====================
+        micButton.addEventListener('click', () => {
+            if (!isRecording) startListening();
+            else stopListening();
+        });
+
+        function startListening() {
+            if (!recognition) {
+                showError('Speech recognition not supported. Use Chrome or Edge.');
+                return;
+            }
+            stopAIAudio();
+            isRecording = true;
+            micButton.classList.add('recording');
+            statusText.textContent = '🎤 Listening...';
+            statusText.classList.add('recording');
+
+            // First click: play greeting immediately
+            if (!hasGreeted) {
+                hasGreeted = true;
+                addMessage(GREETING, 'ai');
+                conversationHistory.push({ role: 'assistant', content: GREETING });
+                playTTS(GREETING);
+            }
+
+            try { recognition.start(); } catch(e) {
+                recognition.stop();
+                setTimeout(() => recognition.start(), 100);
+            }
+        }
+
+        function stopListening() {
+            isRecording = false;
+            micButton.classList.remove('recording');
+            statusText.textContent = 'Click to speak';
+            statusText.classList.remove('recording');
+            removeInterim();
+            stopAIAudio();
+            try { recognition.stop(); } catch(e) {}
+
+            // If last message is from user and no LLM call pending, fire it now
+            clearTimeout(silenceTimer);
+            const last = conversationHistory[conversationHistory.length - 1];
+            if (last && last.role === 'user' && !pendingLLM) {
+                sendToLLM();
+            }
+        }
+
+        // ===================== LLM + TTS (PARALLEL) =====================
+        async function sendToLLM() {
+            if (pendingLLM) return;
+            pendingLLM = true;
+
+            const thinkingDiv = addMessage('💭 Neha is typing...', 'thinking');
+
+            try {
+                const resp = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...conversationHistory],
+                        max_tokens: 150,
+                        temperature: 0.7
+                    })
+                });
+
+                thinkingDiv.remove();
+
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.error || `Server error ${resp.status}`);
+                }
+
+                const data = await resp.json();
+                const aiText = data.response;
+                if (!aiText) throw new Error('Empty LLM response');
+
+                conversationHistory.push({ role: 'assistant', content: aiText });
+                console.log('🤖 AI:', aiText);
+
+                // PARALLEL: show text + play voice at the same time
+                addMessage(aiText, 'ai');
+                playTTS(aiText);
+
+            } catch (err) {
+                if (thinkingDiv.parentNode) thinkingDiv.remove();
+                showError(err.message);
+                console.error('LLM error:', err);
+            } finally {
+                pendingLLM = false;
+            }
+        }
+
+        async function playTTS(text) {
+            try {
+                const resp = await fetch(`${API_BASE}/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                if (!resp.ok) return;
+
+                const data = await resp.json();
+                if (!data.audio) return;
+
+                const bytes = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
+                const blob = new Blob([bytes], { type: 'audio/wav' });
+                const url = URL.createObjectURL(blob);
+
+                currentAIAudio = new Audio(url);
+                isAISpeaking = true;
+                aiPaused = true;
+
+                // Stop recognition so mic doesn't pick up AI voice
+                if (recognition) {
+                    try { recognition.stop(); } catch(e) {}
+                }
+
+                currentAIAudio.onended = () => {
+                    isAISpeaking = false;
+                    URL.revokeObjectURL(url);
+                    // Brief cooldown to flush any stale buffered results
+                    aiCooldown = true;
+                    setTimeout(() => {
+                        aiCooldown = false;
+                        aiPaused = false;
+                        // Resume listening
+                        if (isRecording && recognition) {
+                            try { recognition.start(); } catch(e) {}
+                        }
+                    }, 500);
+                };
+                currentAIAudio.onerror = () => {
+                    isAISpeaking = false;
+                    aiCooldown = true;
+                    setTimeout(() => {
+                        aiCooldown = false;
+                        aiPaused = false;
+                        if (isRecording && recognition) {
+                            try { recognition.start(); } catch(e) {}
+                        }
+                    }, 500);
+                };
+                await currentAIAudio.play();
+            } catch (err) {
+                isAISpeaking = false;
+                console.warn('TTS error:', err);
+            }
+        }
+
+        function stopAIAudio() {
+            if (currentAIAudio) {
+                currentAIAudio.pause();
+                currentAIAudio.currentTime = 0;
+            }
+            isAISpeaking = false;
+            aiPaused = false;
+            aiCooldown = false;
+        }
+
+        // ===================== UI HELPERS =====================
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = text;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return div;
+        }
+
+        function showInterim(text) {
+            if (!interimDiv) {
+                interimDiv = document.createElement('div');
+                interimDiv.className = 'message interim';
+                chatMessages.appendChild(interimDiv);
+            }
+            interimDiv.textContent = text;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeInterim() {
+            if (interimDiv) { interimDiv.remove(); interimDiv = null; }
+        }
+
+        function showError(msg) {
+            const div = document.createElement('div');
+            div.className = 'error-message';
+            div.textContent = '\u26a0\ufe0f ' + msg;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(() => div.remove(), 5000);
+        }
+
+        // ===================== INIT =====================
+        window.addEventListener('load', async () => {
+            try {
+                const r = await fetch(`${API_BASE}/`);
+                if (!r.ok) showError('Server not running on port 5000.');
+            } catch { showError('Cannot connect to server. Start Flask server first.'); }
+        });
+    </script>
+</body>
+</html>
