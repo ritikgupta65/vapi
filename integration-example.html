@@ -313,14 +313,14 @@
 <!-- ═══════════════════════════════════════════════════════ -->
 
 <!-- Step 1: Include the SDK (from your deployed voice server) -->
-<script src="http://localhost:5000/voicesdk.js"></script>
+<script src="/voicesdk.js"></script>
 
 <script>
 // ───────────────────────────────────────────────────────
 // Step 2: Initialize VoiceSDK (ONLY CONFIG YOU NEED)
 // ───────────────────────────────────────────────────────
 const voice = new VoiceSDK({
-    serverUrl: 'http://localhost:5000',
+    serverUrl: window.location.origin,
 
     // Your AI's personality/instructions
     systemPrompt: `You are Korakari, a friendly and helpful AI assistant for Bruchi Club.

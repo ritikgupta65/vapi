@@ -180,7 +180,7 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- POWERED BY VOICESDK — just include + configure     -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <script src="http://localhost:5000/voicesdk.js"></script>
+    <script src="/voicesdk.js"></script>
     <script>
         const micButton = document.getElementById('micButton');
         const statusText = document.getElementById('statusText');
@@ -189,7 +189,7 @@
 
         // ─── Initialize VoiceSDK ───
         const voice = new VoiceSDK({
-            serverUrl: 'http://localhost:5000',
+            serverUrl: window.location.origin,
 
             systemPrompt: `You are Neha, a professional and friendly customer support representative for Levi's India — the world's most iconic denim brand.
 Your job is to help customers with order tracking, returns & exchanges, product questions, size & fit guidance, shipping, and payments.
@@ -314,10 +314,10 @@ ESCALATION: For defects, complex billing, damaged/missing items — collect phon
         // ─── Health Check ───
         window.addEventListener('load', async function () {
             try {
-                var r = await fetch('http://localhost:5000/');
-                if (!r.ok) showError('Server not running on port 5000.');
+                var r = await fetch(window.location.origin + '/');
+                if (!r.ok) showError('Server not responding.');
             } catch (e) {
-                showError('Cannot connect to server. Start Flask server first.');
+                showError('Cannot connect to server.');
             }
         });
     </script>
