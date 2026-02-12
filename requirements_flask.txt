@@ -4,3 +4,4 @@ flask-cors==5.0.0
 python-dotenv==1.0.0
 deepgram-sdk==3.8.3
 openai==1.58.1
+gunicorn==21.2.0
