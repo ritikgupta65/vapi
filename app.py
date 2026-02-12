@@ -97,16 +97,35 @@ print("  POST /tts              - Text to Speech")
 print("  POST /chat             - LLM Chat")
 print("  POST /speech-to-speech - Full pipeline")
 print("  GET  /                 - Health check")
+print("  GET  /voicesdk.js      - Embeddable SDK")
+print("  GET  /integration-example - Demo page")
 print("="*50 + "\n")
 
 
 # -------------------------
-# SERVE FRONTEND
+# SERVE FRONTEND & SDK
 # -------------------------
 @app.route("/app", methods=["GET"])
 def serve_frontend():
     """Serve the index.html frontend"""
     return send_file(os.path.join(os.path.dirname(__file__), "index.html"))
+
+
+@app.route("/voicesdk.js", methods=["GET"])
+def serve_sdk():
+    """Serve the VoiceSDK JavaScript file for embedding in other projects."""
+    return send_file(
+        os.path.join(os.path.dirname(__file__), "voicesdk.js"),
+        mimetype='application/javascript'
+    )
+
+
+@app.route("/integration-example", methods=["GET"])
+def serve_integration_example():
+    """Serve the integration example page."""
+    return send_file(
+        os.path.join(os.path.dirname(__file__), "integration-example.html")
+    )
 
 
 # -------------------------

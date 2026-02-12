@@ -177,8 +177,21 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- POWERED BY VOICESDK — just include + configure     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <script src="http://localhost:5000/voicesdk.js"></script>
     <script>
-        const SYSTEM_PROMPT = `You are Neha, a professional and friendly customer support representative for Levi's India — the world's most iconic denim brand.
+        const micButton = document.getElementById('micButton');
+        const statusText = document.getElementById('statusText');
+        const chatMessages = document.getElementById('chatMessages');
+        var interimDiv = null;
+
+        // ─── Initialize VoiceSDK ───
+        const voice = new VoiceSDK({
+            serverUrl: 'http://localhost:5000',
+
+            systemPrompt: `You are Neha, a professional and friendly customer support representative for Levi's India — the world's most iconic denim brand.
 Your job is to help customers with order tracking, returns & exchanges, product questions, size & fit guidance, shipping, and payments.
 
 CORE BEHAVIOR:
@@ -196,255 +209,68 @@ KEY POLICIES:
 - Shipping: 1-2 days processing, 3-7 days delivery.
 - Contact: customercare@levi.in / 1800-123-5384
 
-ESCALATION: For defects, complex billing, damaged/missing items — collect phone, email, order number and say a specialist will contact within 24 hours.`;
+ESCALATION: For defects, complex billing, damaged/missing items — collect phone, email, order number and say a specialist will contact within 24 hours.`,
 
-        const API_BASE = 'http://localhost:5000';
-        const micButton = document.getElementById('micButton');
-        const statusText = document.getElementById('statusText');
-        const chatMessages = document.getElementById('chatMessages');
+            greeting: "Hello! Welcome to Levi's customer support. I'm Neha. How can I help you?",
 
-        let isRecording = false;
-        let conversationHistory = [];
-        let currentAIAudio = null;
-        let isAISpeaking = false;
-        let aiPaused = false;      // True while recognition is paused for AI
-        let aiCooldown = false;    // Brief cooldown after AI stops to flush stale results
-        let interimDiv = null;
-        let silenceTimer = null;
-        let pendingLLM = false;
-        let hasGreeted = false;
+            onUserTranscript: function (text) {
+                removeThinking();
+                addMessage(text, 'user');
+            },
 
-        const GREETING = "Hello! Welcome to Levi's customer support. I'm Neha. How can I help you?";
+            onAIResponse: function (text) {
+                removeThinking();
+                addMessage(text, 'ai');
+            },
 
-        // ===================== SPEECH RECOGNITION =====================
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-
-            let processedIndices = new Set();
-
-            recognition.onresult = (event) => {
-                // Block ALL input while AI is speaking or during cooldown
-                if (isAISpeaking || aiPaused || aiCooldown) return;
-
-                let currentInterim = '';
-
-                for (let i = 0; i < event.results.length; i++) {
-                    const result = event.results[i];
-                    const text = result[0].transcript.trim();
-
-                    if (result.isFinal && text && !processedIndices.has(i)) {
-                        processedIndices.add(i);
-                        removeInterim();
-
-                        // Display user message immediately
-                        addMessage(text, 'user');
-                        conversationHistory.push({ role: 'user', content: text });
-                        console.log('👤 User:', text);
-
-                        // Reset silence timer — wait for more sentences
-                        clearTimeout(silenceTimer);
-                        silenceTimer = setTimeout(() => {
-                            if (!pendingLLM) sendToLLM();
-                        }, 1200);
-
-                    } else if (!result.isFinal) {
-                        currentInterim += text;
-                    }
+            onStateChange: function (state) {
+                if (state === 'thinking') showThinking();
+                if (state === 'listening' && voice.isActive()) {
+                    statusText.textContent = '🎤 Listening...';
+                } else if (state === 'thinking') {
+                    statusText.textContent = '💭 Thinking...';
+                } else if (state === 'speaking') {
+                    statusText.textContent = '🔊 Speaking...';
+                } else if (state === 'idle') {
+                    statusText.textContent = 'Click to speak';
+                    statusText.classList.remove('recording');
                 }
+            },
 
-                if (currentInterim && isRecording) {
-                    showInterim(currentInterim);
-                }
-            };
+            onInterim: function (text) {
+                if (text) showInterim(text);
+                else removeInterim();
+            },
 
-            recognition.onend = () => {
-                processedIndices = new Set();
-                // Only auto-restart if recording AND not paused for AI
-                if (isRecording && !aiPaused) {
-                    try { recognition.start(); } catch(e) {}
-                }
-            };
+            onCallStart: function () {
+                micButton.classList.add('recording');
+                statusText.classList.add('recording');
+            },
 
-            recognition.onerror = (event) => {
-                if (event.error === 'no-speech' || event.error === 'aborted') return;
-                console.warn('Speech error:', event.error);
-            };
-        }
+            onCallEnd: function () {
+                micButton.classList.remove('recording');
+                statusText.classList.remove('recording');
+                statusText.textContent = 'Click to speak';
+            },
 
-        // ===================== MIC TOGGLE =====================
-        micButton.addEventListener('click', () => {
-            if (!isRecording) startListening();
-            else stopListening();
+            onError: function (err) {
+                showError(err.message);
+            }
         });
 
-        function startListening() {
-            if (!recognition) {
-                showError('Speech recognition not supported. Use Chrome or Edge.');
-                return;
-            }
-            stopAIAudio();
-            isRecording = true;
-            micButton.classList.add('recording');
-            statusText.textContent = '🎤 Listening...';
-            statusText.classList.add('recording');
+        // ─── Connect to mic button ───
+        micButton.addEventListener('click', function () {
+            voice.toggleCall();
+        });
 
-            // First click: play greeting immediately
-            if (!hasGreeted) {
-                hasGreeted = true;
-                addMessage(GREETING, 'ai');
-                conversationHistory.push({ role: 'assistant', content: GREETING });
-                playTTS(GREETING);
-            }
-
-            try { recognition.start(); } catch(e) {
-                recognition.stop();
-                setTimeout(() => recognition.start(), 100);
-            }
-        }
-
-        function stopListening() {
-            isRecording = false;
-            micButton.classList.remove('recording');
-            statusText.textContent = 'Click to speak';
-            statusText.classList.remove('recording');
-            removeInterim();
-            stopAIAudio();
-            try { recognition.stop(); } catch(e) {}
-
-            // If last message is from user and no LLM call pending, fire it now
-            clearTimeout(silenceTimer);
-            const last = conversationHistory[conversationHistory.length - 1];
-            if (last && last.role === 'user' && !pendingLLM) {
-                sendToLLM();
-            }
-        }
-
-        // ===================== LLM + TTS (PARALLEL) =====================
-        async function sendToLLM() {
-            if (pendingLLM) return;
-            pendingLLM = true;
-
-            const thinkingDiv = addMessage('💭 Neha is typing...', 'thinking');
-
-            try {
-                const resp = await fetch(`${API_BASE}/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...conversationHistory],
-                        max_tokens: 150,
-                        temperature: 0.7
-                    })
-                });
-
-                thinkingDiv.remove();
-
-                if (!resp.ok) {
-                    const err = await resp.json().catch(() => ({}));
-                    throw new Error(err.error || `Server error ${resp.status}`);
-                }
-
-                const data = await resp.json();
-                const aiText = data.response;
-                if (!aiText) throw new Error('Empty LLM response');
-
-                conversationHistory.push({ role: 'assistant', content: aiText });
-                console.log('🤖 AI:', aiText);
-
-                // PARALLEL: show text + play voice at the same time
-                addMessage(aiText, 'ai');
-                playTTS(aiText);
-
-            } catch (err) {
-                if (thinkingDiv.parentNode) thinkingDiv.remove();
-                showError(err.message);
-                console.error('LLM error:', err);
-            } finally {
-                pendingLLM = false;
-            }
-        }
-
-        async function playTTS(text) {
-            try {
-                const resp = await fetch(`${API_BASE}/tts`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
-                });
-                if (!resp.ok) return;
-
-                const data = await resp.json();
-                if (!data.audio) return;
-
-                const bytes = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
-                const blob = new Blob([bytes], { type: 'audio/wav' });
-                const url = URL.createObjectURL(blob);
-
-                currentAIAudio = new Audio(url);
-                isAISpeaking = true;
-                aiPaused = true;
-
-                // Stop recognition so mic doesn't pick up AI voice
-                if (recognition) {
-                    try { recognition.stop(); } catch(e) {}
-                }
-
-                currentAIAudio.onended = () => {
-                    isAISpeaking = false;
-                    URL.revokeObjectURL(url);
-                    // Brief cooldown to flush any stale buffered results
-                    aiCooldown = true;
-                    setTimeout(() => {
-                        aiCooldown = false;
-                        aiPaused = false;
-                        // Resume listening
-                        if (isRecording && recognition) {
-                            try { recognition.start(); } catch(e) {}
-                        }
-                    }, 500);
-                };
-                currentAIAudio.onerror = () => {
-                    isAISpeaking = false;
-                    aiCooldown = true;
-                    setTimeout(() => {
-                        aiCooldown = false;
-                        aiPaused = false;
-                        if (isRecording && recognition) {
-                            try { recognition.start(); } catch(e) {}
-                        }
-                    }, 500);
-                };
-                await currentAIAudio.play();
-            } catch (err) {
-                isAISpeaking = false;
-                console.warn('TTS error:', err);
-            }
-        }
-
-        function stopAIAudio() {
-            if (currentAIAudio) {
-                currentAIAudio.pause();
-                currentAIAudio.currentTime = 0;
-            }
-            isAISpeaking = false;
-            aiPaused = false;
-            aiCooldown = false;
-        }
-
-        // ===================== UI HELPERS =====================
+        // ─── UI Helpers ───
         function addMessage(text, type) {
-            const div = document.createElement('div');
-            div.className = `message ${type}`;
+            removeInterim();
+            var div = document.createElement('div');
+            div.className = 'message ' + type;
             div.textContent = text;
             chatMessages.appendChild(div);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            return div;
         }
 
         function showInterim(text) {
@@ -461,21 +287,38 @@ ESCALATION: For defects, complex billing, damaged/missing items — collect phon
             if (interimDiv) { interimDiv.remove(); interimDiv = null; }
         }
 
-        function showError(msg) {
-            const div = document.createElement('div');
-            div.className = 'error-message';
-            div.textContent = '\u26a0\ufe0f ' + msg;
+        function showThinking() {
+            removeThinking();
+            var div = document.createElement('div');
+            div.className = 'message thinking';
+            div.id = 'thinkingMsg';
+            div.textContent = '💭 Neha is typing...';
             chatMessages.appendChild(div);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            setTimeout(() => div.remove(), 5000);
         }
 
-        // ===================== INIT =====================
-        window.addEventListener('load', async () => {
+        function removeThinking() {
+            var el = document.getElementById('thinkingMsg');
+            if (el) el.remove();
+        }
+
+        function showError(msg) {
+            var div = document.createElement('div');
+            div.className = 'error-message';
+            div.textContent = '⚠️ ' + msg;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(function() { div.remove(); }, 5000);
+        }
+
+        // ─── Health Check ───
+        window.addEventListener('load', async function () {
             try {
-                const r = await fetch(`${API_BASE}/`);
+                var r = await fetch('http://localhost:5000/');
                 if (!r.ok) showError('Server not running on port 5000.');
-            } catch { showError('Cannot connect to server. Start Flask server first.'); }
+            } catch (e) {
+                showError('Cannot connect to server. Start Flask server first.');
+            }
         });
     </script>
 </body>

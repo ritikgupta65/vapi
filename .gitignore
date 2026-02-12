@@ -1,3 +1,22 @@
 .env
 custom
 __pycache__
+
+
+
+# <!-- 1. Include SDK from your deployed voice server -->
+# <script src="https://YOUR_SERVER/voicesdk.js"></script>
+
+# <script>
+# // 2. Initialize
+# const voice = new VoiceSDK({
+#   serverUrl: 'https://YOUR_SERVER',
+#   systemPrompt: 'You are a helpful assistant for Bruchi Club...',
+#   onUserTranscript: (text) => addMessageToYourChat('user', text),
+#   onAIResponse:     (text) => addMessageToYourChat('ai', text),
+#   onStateChange:    (state) => updateYourCallButton(state),
+# });
+
+# // 3. Connect to your call button
+# document.getElementById('callBtn').onclick = () => voice.toggleCall();
+# </script>
