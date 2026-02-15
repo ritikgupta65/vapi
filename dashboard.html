@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistants — Dashboard</title>
+    <style>
+        /* ─── Reset & Base ─── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: #0f1117;
+            color: #e1e1e6;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ─── Layout ─── */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ─── Nav Rail (leftmost column) ─── */
+        .nav-rail {
+            width: 240px;
+            background: #0d0f14;
+            border-right: 1px solid #1e2030;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 0;
+            flex-shrink: 0;
+            gap: 2px;
+            z-index: 10;
+            transition: width 0.25s cubic-bezier(.4,0,.2,1);
+            overflow: hidden;
+        }
+        .nav-rail.collapsed {
+            width: 68px;
+            align-items: center;
+        }
+
+        .nav-rail .nav-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 16px;
+            margin-bottom: 12px;
+        }
+        .nav-rail.collapsed .nav-header {
+            justify-content: center;
+            padding: 4px 0;
+        }
+
+        .nav-rail .nav-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 700;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .nav-rail .nav-brand {
+            font-size: 15px;
+            font-weight: 700;
+            color: #e1e1e6;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .nav-rail.collapsed .nav-brand { display: none; }
+
+        .nav-rail .nav-collapse-btn {
+            margin-left: auto;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid #1e2030;
+            background: #161821;
+            color: #5b5f73;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .nav-rail .nav-collapse-btn:hover { color: #e1e1e6; background: #1a1d2e; }
+        .nav-rail.collapsed .nav-collapse-btn { margin-left: 0; }
+
+        .nav-rail .nav-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #3b3f52;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 12px 18px 6px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .nav-rail.collapsed .nav-section-label { display: none; }
+
+        .nav-rail .nav-item {
+            margin: 1px 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            color: #7a7f95;
+            transition: all 0.15s;
+            font-size: 13px;
+            font-weight: 500;
+            position: relative;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .nav-rail.collapsed .nav-item {
+            margin: 1px 8px;
+            padding: 12px 0;
+            justify-content: center;
+            gap: 0;
+        }
+        .nav-rail .nav-item:hover {
+            color: #e1e1e6;
+            background: #1a1d2e;
+        }
+        .nav-rail .nav-item.active {
+            color: #22d3ee;
+            background: #0c2a38;
+        }
+        .nav-rail .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            background: #22d3ee;
+            border-radius: 0 3px 3px 0;
+        }
+        .nav-rail.collapsed .nav-item.active::before {
+            left: -8px;
+        }
+        .nav-rail .nav-item .nav-icon {
+            font-size: 18px;
+            line-height: 1;
+            flex-shrink: 0;
+            width: 24px;
+            text-align: center;
+        }
+        .nav-rail .nav-item .nav-label {
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .nav-rail.collapsed .nav-item .nav-label { display: none; }
+
+        .nav-rail .nav-spacer { flex: 1; }
+
+        /* ─── Page Panels (content for each nav item) ─── */
+        .page-panel {
+            display: none;
+            flex: 1;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .page-panel.active {
+            display: flex;
+        }
+
+        /* Placeholder pages */
+        .placeholder-page {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #4b5563;
+            gap: 16px;
+            text-align: center;
+            padding: 40px;
+        }
+        .placeholder-page .ph-icon {
+            font-size: 56px;
+            opacity: 0.25;
+        }
+        .placeholder-page .ph-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #6b7280;
+        }
+        .placeholder-page .ph-desc {
+            font-size: 14px;
+            color: #4b5563;
+            max-width: 360px;
+            line-height: 1.6;
+        }
+        .placeholder-page .ph-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            background: #1f2937;
+            border: 1px solid #2a2d3a;
+            border-radius: 20px;
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width: 280px;
+            background: #161821;
+            border-right: 1px solid #2a2d3a;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 16px 18px;
+            border-bottom: 1px solid #2a2d3a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e1e1e6;
+            flex: 1;
+        }
+
+        .sidebar-header .docs-link {
+            font-size: 12px;
+            color: #6b7280;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .sidebar-header .docs-link:hover { color: #9ca3af; }
+
+        .create-btn {
+            margin: 12px 14px;
+            padding: 10px 16px;
+            background: #1f2937;
+            border: 1px dashed #374151;
+            border-radius: 10px;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .create-btn:hover {
+            background: #1a3a4a;
+            border-color: #22d3ee;
+            color: #22d3ee;
+        }
+        .create-btn .icon { font-size: 18px; }
+
+        .search-box {
+            margin: 0 14px 10px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            background: #1f2937;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            color: #e1e1e6;
+            font-size: 13px;
+            outline: none;
+        }
+        .search-box input::placeholder { color: #4b5563; }
+        .search-box input:focus { border-color: #22d3ee; }
+        .search-box .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4b5563;
+            font-size: 13px;
+        }
+
+        .assistant-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 8px;
+        }
+
+        .assistant-list::-webkit-scrollbar { width: 4px; }
+        .assistant-list::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 2px; }
+
+        .assistant-item {
+            padding: 12px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-bottom: 2px;
+        }
+        .assistant-item:hover { background: #1f2937; }
+        .assistant-item.active {
+            background: #164e63;
+            border: 1px solid #22d3ee;
+        }
+
+        .assistant-item .name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e1e1e6;
+            margin-bottom: 3px;
+        }
+        .assistant-item .meta {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .assistant-item .meta .provider-tag {
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        /* ─── Main Area ─── */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .main-header {
+            padding: 14px 24px;
+            border-bottom: 1px solid #2a2d3a;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #161821;
+        }
+
+        .main-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e1e1e6;
+            flex: 1;
+        }
+
+        .main-header .assistant-id {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 400;
+            cursor: pointer;
+        }
+        .main-header .assistant-id:hover { color: #9ca3af; }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #2a2d3a;
+            background: #1f2937;
+            color: #e1e1e6;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .header-btn:hover { background: #374151; }
+
+        .header-btn.talk-btn {
+            background: #059669;
+            border-color: #059669;
+            color: white;
+        }
+        .header-btn.talk-btn:hover { background: #047857; }
+
+        .header-btn.publish-btn {
+            background: #22d3ee;
+            border-color: #22d3ee;
+            color: #0f1117;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+        .header-btn.publish-btn.dirty {
+            pointer-events: auto;
+            opacity: 1;
+        }
+        .header-btn.publish-btn.dirty:hover { background: #06b6d4; }
+
+        .header-btn.published {
+            background: #065f46;
+            border-color: #10b981;
+            color: #10b981;
+            pointer-events: auto;
+            opacity: 1;
+        }
+        .header-btn.published:hover { background: #047857; }
+
+        .header-btn.delete-btn {
+            background: transparent;
+            border-color: #7f1d1d;
+            color: #ef4444;
+        }
+        .header-btn.delete-btn:hover { background: #7f1d1d; color: white; }
+
+        /* ─── Tabs ─── */
+        .tabs {
+            display: flex;
+            gap: 0;
+            padding: 0 24px;
+            background: #161821;
+            border-bottom: 1px solid #2a2d3a;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab:hover { color: #e1e1e6; }
+        .tab.active {
+            color: #22d3ee;
+            border-bottom-color: #22d3ee;
+        }
+        .tab .tab-icon { font-size: 15px; }
+
+        /* ─── Content Area ─── */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+        .content-area::-webkit-scrollbar { width: 6px; }
+        .content-area::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 3px; }
+
+        /* ─── Settings Panel ─── */
+        .settings-panel {
+            max-width: 720px;
+        }
+
+        .setting-group {
+            margin-bottom: 28px;
+        }
+
+        .setting-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #d1d5db;
+            margin-bottom: 6px;
+        }
+
+        .setting-group .hint {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .setting-group .hint .info-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid #4b5563;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        .setting-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .setting-row .setting-group { flex: 1; margin-bottom: 0; }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: #1f2937;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            color: #e1e1e6;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-select:focus, .form-input:focus { border-color: #22d3ee; }
+        .form-select option { background: #1f2937; color: #e1e1e6; }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: #1f2937;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            color: #e1e1e6;
+            font-size: 13px;
+            line-height: 1.6;
+            outline: none;
+            resize: vertical;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            transition: border-color 0.2s;
+        }
+        .form-textarea:focus { border-color: #22d3ee; }
+
+        .save-indicator {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 10px 20px;
+            background: #065f46;
+            color: #10b981;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ─── Published URL Banner ─── */
+        .publish-banner {
+            background: #064e3b;
+            border: 1px solid #10b981;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        .publish-banner.visible { display: block; }
+        .publish-banner .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 6px;
+        }
+        .publish-banner .url-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .publish-banner .url-text {
+            flex: 1;
+            padding: 8px 12px;
+            background: #0f1117;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #6ee7b7;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .publish-banner .copy-btn {
+            padding: 8px 14px;
+            background: #10b981;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .publish-banner .copy-btn:hover { background: #059669; }
+
+        /* ─── Chat Window (Talk to Assistant) ─── */
+        .chat-panel {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .chat-panel.visible {
+            display: flex;
+        }
+
+        .chat-header-bar {
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .chat-header-bar .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .chat-header-bar .info { flex: 1; }
+        .chat-header-bar .info h3 { font-size: 16px; font-weight: 600; }
+        .chat-header-bar .info span { font-size: 12px; opacity: 0.85; }
+        .chat-back-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .chat-back-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #1a1d2e;
+            min-height: 0;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 2px; }
+
+        .chat-msg {
+            max-width: 80%;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.45;
+            animation: msgIn 0.2s ease;
+        }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-msg.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-msg.ai {
+            align-self: flex-start;
+            background: #252838;
+            color: #e1e1e6;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-msg.ai .avatar-sm {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: #22d3ee;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #0f1117; margin-right: 6px; vertical-align: middle;
+        }
+        .chat-msg .time {
+            font-size: 11px; opacity: 0.5; margin-top: 4px;
+        }
+        .chat-msg.interim {
+            align-self: flex-end;
+            background: rgba(34, 211, 238, 0.1);
+            color: #6b7280;
+            border: 1px dashed #22d3ee;
+            font-style: italic;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-msg.thinking {
+            align-self: flex-start;
+            background: #252838;
+            color: #6b7280;
+            font-style: italic;
+            animation: blink 1s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.4; }
+            50%      { opacity: 1; }
+        }
+
+        .chat-status-bar {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            padding: 4px;
+            background: #161821;
+            display: none;
+        }
+        .chat-status-bar.visible { display: block; }
+        .chat-status-bar.listening { color: #22d3ee; }
+        .chat-status-bar.thinking  { color: #9ca3af; }
+        .chat-status-bar.speaking  { color: #10b981; }
+
+        .chat-input-row {
+            padding: 12px 16px 16px;
+            background: #1a1d2e;
+            border-top: 1px solid #2a2d3a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 0 0 16px 16px;
+        }
+        .chat-input-row input {
+            flex: 1;
+            border: 2px solid #2a2d3a;
+            border-radius: 24px;
+            padding: 10px 18px;
+            font-size: 14px;
+            outline: none;
+            background: #252838;
+            color: #e1e1e6;
+        }
+        .chat-input-row input:focus { border-color: #22d3ee; }
+        .chat-input-row input::placeholder { color: #4b5563; }
+
+        .chat-icon-btn {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            border: 2px solid #22d3ee;
+            background: transparent;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .chat-icon-btn:hover { background: #164e63; }
+        .chat-icon-btn svg { width: 20px; height: 20px; fill: #22d3ee; }
+
+        .chat-icon-btn.call-active {
+            background: #dc2626;
+            border-color: #dc2626;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .chat-icon-btn.call-active svg { fill: white; }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+            50%      { box-shadow: 0 0 0 10px rgba(220,38,38,0); }
+        }
+
+        .chat-send-btn {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: #22d3ee;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .chat-send-btn:hover { background: #0891b2; }
+        .chat-send-btn svg { width: 18px; height: 18px; fill: #0f1117; }
+
+        /* ─── Empty State ─── */
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #4b5563;
+            font-size: 15px;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .empty-state .icon { font-size: 48px; opacity: 0.3; }
+
+        /* ─── Toast Notification ─── */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success {
+            background: #065f46;
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+        .toast.error {
+            background: #7f1d1d;
+            color: #fca5a5;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <!-- ─── Nav Rail ─── -->
+    <div class="nav-rail" id="navRail">
+        <div class="nav-header">
+            <div class="nav-logo">AI</div>
+            <span class="nav-brand">Dashboard</span>
+            <button class="nav-collapse-btn" id="navCollapseBtn" title="Collapse sidebar">◀</button>
+        </div>
+        <div class="nav-section-label">Main</div>
+        <div class="nav-item active" data-nav="assistants">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">Assistants</span>
+        </div>
+        <div class="nav-item" data-nav="phone">
+            <span class="nav-icon">📞</span>
+            <span class="nav-label">Phone Numbers</span>
+        </div>
+        <div class="nav-item" data-nav="history">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">History</span>
+        </div>
+        <div class="nav-spacer"></div>
+        <div class="nav-section-label">Account</div>
+        <div class="nav-item" data-nav="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+        </div>
+    </div>
+
+    <!-- ─── Page: Assistants ─── -->
+    <div class="page-panel active" id="page-assistants">
+    <!-- ─── Sidebar ─── -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🤖 Assistants</h2>
+        </div>
+        <button class="create-btn" id="createAssistantBtn">
+            <span class="icon">＋</span> Create Assistant
+        </button>
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search Assistants" />
+        </div>
+        <div class="assistant-list" id="assistantList">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- ─── Main Area ─── -->
+    <div class="main-area" id="mainArea">
+        <!-- Empty state (shown when no assistant selected) -->
+        <div class="empty-state" id="emptyState">
+            <div class="icon">🤖</div>
+            <div>Select an assistant or create a new one</div>
+        </div>
+
+        <!-- Assistant Detail (hidden initially) -->
+        <div id="assistantDetail" style="display:none; flex-direction:column; height:100%;">
+            <!-- Main Header -->
+            <div class="main-header">
+                <h1 id="detailName">Assistant Name</h1>
+                <span class="assistant-id" id="detailId" title="Click to copy">ID: ---</span>
+                <div class="header-actions">
+                    <button class="header-btn delete-btn" id="deleteBtn">🗑 Delete</button>
+                    <button class="header-btn talk-btn" id="talkBtn">📞 Talk to Assistant</button>
+                    <button class="header-btn publish-btn" id="publishBtn">Publish</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs" id="tabsBar">
+                <div class="tab active" data-tab="model"><span class="tab-icon">🧠</span> Model</div>
+                <div class="tab" data-tab="voice"><span class="tab-icon">🎙</span> Voice</div>
+                <div class="tab" data-tab="advanced"><span class="tab-icon">⚙️</span> Advanced</div>
+            </div>
+
+            <!-- Content (settings or chat) -->
+            <div class="content-area" id="contentArea">
+                <!-- Settings panel -->
+                <div class="settings-panel" id="settingsPanel">
+                    <!-- Published URL Banner -->
+                    <div class="publish-banner" id="publishBanner">
+                        <div class="title">✅ Published — Use this URL to embed this assistant</div>
+                        <div class="url-row">
+                            <div class="url-text" id="publishUrl"></div>
+                            <button class="copy-btn" id="copyUrlBtn">Copy</button>
+                        </div>
+                    </div>
+
+                    <!-- Model Tab Content -->
+                    <div class="tab-content" id="tab-model">
+                        <div class="setting-row">
+                            <div class="setting-group">
+                                <label>Provider</label>
+                                <select class="form-select" disabled>
+                                    <option>OpenAI</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label>Model</label>
+                                <select class="form-select" id="fieldModel">
+                                    <option value="gpt-4o-mini">GPT 4o Mini</option>
+                                    <option value="gpt-4o">GPT 4o</option>
+                                    <option value="gpt-4-turbo">GPT 4 Turbo</option>
+                                    <option value="gpt-3.5-turbo">GPT 3.5 Turbo</option>
+                                    <option value="o1-mini">o1-mini</option>
+                                    <option value="o1-preview">o1-preview</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label>First Message Mode</label>
+                            <div class="hint"><span class="info-icon">i</span> The greeting the assistant speaks when a call begins</div>
+                            <select class="form-select" disabled>
+                                <option>Assistant speaks first</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-group">
+                                <label>Temperature</label>
+                                <div class="hint"><span class="info-icon">i</span> Controls randomness (0 = deterministic, 1 = creative)</div>
+                                <input type="number" class="form-input" id="fieldTemperature" min="0" max="2" step="0.1" value="0.7" />
+                            </div>
+                            <div class="setting-group">
+                                <label>Max Tokens</label>
+                                <div class="hint"><span class="info-icon">i</span> Maximum length of the AI response</div>
+                                <input type="number" class="form-input" id="fieldMaxTokens" min="50" max="4096" step="50" value="200" />
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label>First Message</label>
+                            <input type="text" class="form-input" id="fieldFirstMessage" placeholder="Hello! How can I help you today?" />
+                        </div>
+
+                        <div class="setting-group">
+                            <label>System Prompt</label>
+                            <div class="hint"><span class="info-icon">i</span> Instructions that define how the assistant behaves</div>
+                            <textarea class="form-textarea" id="fieldSystemPrompt" rows="12" placeholder="You are a helpful assistant..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Voice Tab Content -->
+                    <div class="tab-content" id="tab-voice" style="display:none;">
+                        <div class="setting-group">
+                            <label>STT Provider</label>
+                            <select class="form-select" disabled>
+                                <option>Deepgram</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label>STT Model (Transcriber)</label>
+                            <div class="hint"><span class="info-icon">i</span> Speech-to-Text model for transcribing user speech</div>
+                            <select class="form-select" id="fieldSTT">
+                                <option value="nova-2">Nova-2 (Best quality)</option>
+                                <option value="nova-2-general">Nova-2 General</option>
+                                <option value="nova-2-meeting">Nova-2 Meeting</option>
+                                <option value="nova-2-phonecall">Nova-2 Phone Call</option>
+                                <option value="nova-2-conversationalai">Nova-2 Conversational AI</option>
+                                <option value="nova">Nova</option>
+                                <option value="enhanced">Enhanced</option>
+                                <option value="base">Base</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label>TTS Provider</label>
+                            <select class="form-select" disabled>
+                                <option>Deepgram</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label>TTS Model (Voice)</label>
+                            <div class="hint"><span class="info-icon">i</span> Text-to-Speech voice model for the assistant's voice</div>
+                            <select class="form-select" id="fieldTTS">
+                                <option value="aura-asteria-en">Asteria (Female, US English)</option>
+                                <option value="aura-luna-en">Luna (Female, US English)</option>
+                                <option value="aura-stella-en">Stella (Female, US English)</option>
+                                <option value="aura-athena-en">Athena (Female, UK English)</option>
+                                <option value="aura-hera-en">Hera (Female, US English)</option>
+                                <option value="aura-orion-en">Orion (Male, US English)</option>
+                                <option value="aura-arcas-en">Arcas (Male, US English)</option>
+                                <option value="aura-perseus-en">Perseus (Male, US English)</option>
+                                <option value="aura-angus-en">Angus (Male, Irish English)</option>
+                                <option value="aura-orpheus-en">Orpheus (Male, US English)</option>
+                                <option value="aura-helios-en">Helios (Male, UK English)</option>
+                                <option value="aura-zeus-en">Zeus (Male, US English)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Tab Content -->
+                    <div class="tab-content" id="tab-advanced" style="display:none;">
+                        <div class="setting-group">
+                            <label>Assistant Name</label>
+                            <input type="text" class="form-input" id="fieldName" placeholder="Assistant Name" />
+                        </div>
+
+                        <div class="setting-group">
+                            <label>Assistant ID</label>
+                            <input type="text" class="form-input" id="fieldIdDisplay" disabled />
+                        </div>
+
+                        <div class="setting-group">
+                            <label>Created</label>
+                            <input type="text" class="form-input" id="fieldCreated" disabled />
+                        </div>
+
+                        <div class="setting-group">
+                            <label>Last Updated</label>
+                            <input type="text" class="form-input" id="fieldUpdated" disabled />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat panel (Talk to Assistant) -->
+                <div class="chat-panel" id="chatPanel">
+                    <div class="chat-header-bar">
+                        <div class="avatar" id="chatAvatar">🤖</div>
+                        <div class="info">
+                            <h3 id="chatNameLabel">Assistant</h3>
+                            <span id="chatHeaderStatus">Online</span>
+                        </div>
+                        <button class="chat-back-btn" id="chatBackBtn">← Back to Settings</button>
+                    </div>
+                    <div class="chat-status-bar" id="chatStatusBar"></div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input-row">
+                        <button class="chat-icon-btn" id="chatCallBtn" title="Voice call">
+                            <svg viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                        </button>
+                        <input type="text" id="chatTextInput" placeholder="Type your message..." />
+                        <button class="chat-send-btn" id="chatSendBtn" title="Send">
+                            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div><!-- end page-assistants -->
+
+    <!-- ─── Page: Phone Numbers ─── -->
+    <div class="page-panel" id="page-phone">
+        <div class="placeholder-page">
+            <div class="ph-icon">📞</div>
+            <div class="ph-title">Phone Numbers</div>
+            <div class="ph-desc">Connect phone numbers to your AI assistants for inbound and outbound calling. Configure SIP trunks, buy numbers, and manage routing.</div>
+            <div class="ph-badge">Coming Soon</div>
+        </div>
+    </div>
+
+    <!-- ─── Page: History ─── -->
+    <div class="page-panel" id="page-history">
+        <div class="placeholder-page">
+            <div class="ph-icon">📋</div>
+            <div class="ph-title">Call History</div>
+            <div class="ph-desc">View transcripts, recordings, and analytics from all past conversations with your AI assistants.</div>
+            <div class="ph-badge">Coming Soon</div>
+        </div>
+    </div>
+
+    <!-- ─── Page: Settings ─── -->
+    <div class="page-panel" id="page-settings">
+        <div class="placeholder-page">
+            <div class="ph-icon">⚙️</div>
+            <div class="ph-title">Settings</div>
+            <div class="ph-desc">Manage API keys, billing, team members, webhooks, and other account-level configuration.</div>
+            <div class="ph-badge">Coming Soon</div>
+        </div>
+    </div>
+</div>
+
+<!-- Save indicator -->
+<div class="save-indicator" id="saveIndicator">✓ Settings saved</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- VoiceSDK for chat -->
+<script src="/voicesdk.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+const API = window.location.origin;
+let assistants = [];
+let selectedId = null;
+let voiceInstance = null;
+let saveTimeout = null;
+let isChatMode = false;
+let isDirty = false;
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    loadAssistants();
+    bindEvents();
+});
+
+// ═══════════════════════════════════════════════
+// API CALLS
+// ═══════════════════════════════════════════════
+async function apiGet(path) {
+    const r = await fetch(API + path);
+    return r.json();
+}
+async function apiPost(path, body) {
+    const r = await fetch(API + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
+    });
+    return r.json();
+}
+async function apiPut(path, body) {
+    const r = await fetch(API + path, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+    return r.json();
+}
+async function apiDelete(path) {
+    const r = await fetch(API + path, { method: 'DELETE' });
+    return r.json();
+}
+
+// ═══════════════════════════════════════════════
+// LOAD & RENDER
+// ═══════════════════════════════════════════════
+async function loadAssistants() {
+    const data = await apiGet('/api/assistants');
+    assistants = data.assistants || [];
+    renderAssistantList();
+    if (selectedId) {
+        const exists = assistants.find(a => a.id === selectedId);
+        if (exists) selectAssistant(selectedId);
+        else { selectedId = null; showEmpty(); }
+    }
+}
+
+function renderAssistantList(filter) {
+    const list = document.getElementById('assistantList');
+    const q = (filter || document.getElementById('searchInput').value).toLowerCase();
+    const filtered = q ? assistants.filter(a => a.name.toLowerCase().includes(q)) : assistants;
+
+    list.innerHTML = filtered.map(a => `
+        <div class="assistant-item ${a.id === selectedId ? 'active' : ''}" data-id="${a.id}">
+            <div class="name">${escHtml(a.name)}</div>
+            <div class="meta">
+                <span class="provider-tag">deepgram</span> · 
+                <span class="provider-tag">openai</span> ·
+                <span class="provider-tag">${a.published ? '✅ published' : 'draft'}</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Bind clicks
+    list.querySelectorAll('.assistant-item').forEach(el => {
+        el.onclick = () => selectAssistant(el.dataset.id);
+    });
+}
+
+// ═══════════════════════════════════════════════
+// SELECT ASSISTANT
+// ═══════════════════════════════════════════════
+function selectAssistant(id) {
+    selectedId = id;
+    const a = assistants.find(x => x.id === id);
+    if (!a) return showEmpty();
+
+    // Show detail, hide empty
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('assistantDetail').style.display = 'flex';
+
+    // Exit chat mode
+    exitChatMode();
+
+    // Header
+    document.getElementById('detailName').textContent = a.name;
+    document.getElementById('detailId').textContent = 'ID: ' + a.id;
+
+    // Settings fields
+    document.getElementById('fieldModel').value = a.openai_model || 'gpt-4o-mini';
+    document.getElementById('fieldFirstMessage').value = a.first_message || '';
+    document.getElementById('fieldSystemPrompt').value = a.system_prompt || '';
+    document.getElementById('fieldSTT').value = a.stt_model || 'nova-2';
+    document.getElementById('fieldTTS').value = a.tts_model || 'aura-asteria-en';
+    document.getElementById('fieldTemperature').value = a.temperature != null ? a.temperature : 0.7;
+    document.getElementById('fieldMaxTokens').value = a.max_tokens != null ? a.max_tokens : 200;
+    document.getElementById('fieldName').value = a.name || '';
+    document.getElementById('fieldIdDisplay').value = a.id;
+    document.getElementById('fieldCreated').value = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+    document.getElementById('fieldUpdated').value = a.updated_at ? new Date(a.updated_at).toLocaleString() : '';
+
+    // Publish button state
+    updatePublishButton(a);
+
+    // Published banner
+    const banner = document.getElementById('publishBanner');
+    if (a.published) {
+        banner.classList.add('visible');
+        document.getElementById('publishUrl').textContent = window.location.origin + '/a/' + a.id;
+    } else {
+        banner.classList.remove('visible');
+    }
+
+    // Highlight in list
+    renderAssistantList('');
+
+    // Reset dirty state
+    isDirty = false;
+    updatePublishDirtyState();
+}
+
+function showEmpty() {
+    document.getElementById('emptyState').style.display = 'flex';
+    document.getElementById('assistantDetail').style.display = 'none';
+}
+
+function updatePublishButton(a) {
+    const btn = document.getElementById('publishBtn');
+    if (a.published) {
+        btn.textContent = '✅ Published';
+        btn.classList.add('published');
+        btn.classList.remove('publish-btn');
+    } else {
+        btn.textContent = 'Save & Publish';
+        btn.classList.remove('published');
+        btn.classList.add('publish-btn');
+    }
+}
+
+// ═══════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════
+function bindEvents() {
+    // Nav rail navigation
+    document.querySelectorAll('.nav-rail .nav-item').forEach(item => {
+        item.onclick = () => {
+            const page = item.dataset.nav;
+            document.querySelectorAll('.nav-rail .nav-item').forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+            document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('active'));
+            const panel = document.getElementById('page-' + page);
+            if (panel) panel.classList.add('active');
+        };
+    });
+
+    // Nav rail collapse/expand
+    document.getElementById('navCollapseBtn').onclick = () => {
+        const rail = document.getElementById('navRail');
+        const btn = document.getElementById('navCollapseBtn');
+        rail.classList.toggle('collapsed');
+        btn.textContent = rail.classList.contains('collapsed') ? '▶' : '◀';
+        btn.title = rail.classList.contains('collapsed') ? 'Expand sidebar' : 'Collapse sidebar';
+    };
+
+    // Create assistant
+    document.getElementById('createAssistantBtn').onclick = createAssistant;
+
+    // Search
+    document.getElementById('searchInput').oninput = () => renderAssistantList('');
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.onclick = () => switchTab(tab.dataset.tab);
+    });
+
+    // Mark dirty on change (no auto-save — save happens on Publish click)
+    const editableFields = ['fieldModel', 'fieldFirstMessage', 'fieldSystemPrompt', 'fieldSTT', 'fieldTTS', 'fieldName', 'fieldTemperature', 'fieldMaxTokens'];
+    editableFields.forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', () => { markDirty(); });
+        el.addEventListener('change', () => { markDirty(); });
+    });
+
+    // Publish
+    document.getElementById('publishBtn').onclick = togglePublish;
+
+    // Delete
+    document.getElementById('deleteBtn').onclick = deleteAssistant;
+
+    // Talk to Assistant
+    document.getElementById('talkBtn').onclick = enterChatMode;
+
+    // Copy URL
+    document.getElementById('copyUrlBtn').onclick = () => {
+        navigator.clipboard.writeText(document.getElementById('publishUrl').textContent);
+        showToast('URL copied to clipboard!', 'success');
+    };
+
+    // Copy ID
+    document.getElementById('detailId').onclick = () => {
+        const id = selectedId;
+        if (id) {
+            navigator.clipboard.writeText(id);
+            showToast('ID copied!', 'success');
+        }
+    };
+
+    // Chat back button
+    document.getElementById('chatBackBtn').onclick = exitChatMode;
+}
+
+// ═══════════════════════════════════════════════
+// CREATE, SAVE, DELETE, PUBLISH
+// ═══════════════════════════════════════════════
+async function createAssistant() {
+    const data = await apiPost('/api/assistants', { name: 'New Assistant' });
+    assistants.push(data);
+    renderAssistantList('');
+    selectAssistant(data.id);
+    showToast('Assistant created!', 'success');
+    // Focus name field for renaming
+    switchTab('advanced');
+    setTimeout(() => document.getElementById('fieldName').focus(), 100);
+}
+
+function debouncedSave() {
+    // Auto-save disabled — settings are saved only when Publish is clicked
+}
+
+async function saveAssistant() {
+    if (!selectedId) return;
+    const body = {
+        name: document.getElementById('fieldName').value.trim() || 'Untitled',
+        openai_model: document.getElementById('fieldModel').value,
+        first_message: document.getElementById('fieldFirstMessage').value,
+        system_prompt: document.getElementById('fieldSystemPrompt').value,
+        stt_model: document.getElementById('fieldSTT').value,
+        tts_model: document.getElementById('fieldTTS').value,
+        temperature: parseFloat(document.getElementById('fieldTemperature').value) || 0.7,
+        max_tokens: parseInt(document.getElementById('fieldMaxTokens').value) || 200,
+    };
+    const updated = await apiPut('/api/assistants/' + selectedId, body);
+    // Update local
+    const idx = assistants.findIndex(a => a.id === selectedId);
+    if (idx !== -1) assistants[idx] = updated;
+    document.getElementById('detailName').textContent = updated.name;
+    renderAssistantList('');
+    isDirty = false;
+    updatePublishDirtyState();
+}
+
+async function deleteAssistant() {
+    if (!selectedId) return;
+    if (!confirm('Delete this assistant? This cannot be undone.')) return;
+    await apiDelete('/api/assistants/' + selectedId);
+    assistants = assistants.filter(a => a.id !== selectedId);
+    selectedId = null;
+    renderAssistantList('');
+    showEmpty();
+    showToast('Assistant deleted', 'success');
+}
+
+async function togglePublish() {
+    if (!selectedId) return;
+    const a = assistants.find(x => x.id === selectedId);
+    if (!a) return;
+
+    // If already published → unpublish
+    if (a.published) {
+        const updated = await apiPost('/api/assistants/' + selectedId + '/unpublish');
+        const idx = assistants.findIndex(x => x.id === selectedId);
+        if (idx !== -1) assistants[idx] = updated;
+        updatePublishButton(updated);
+        document.getElementById('publishBanner').classList.remove('visible');
+        renderAssistantList('');
+        isDirty = false;
+        updatePublishDirtyState();
+        showToast('Assistant unpublished', 'success');
+        return;
+    }
+
+    // Save settings first, then publish
+    await saveAssistant();
+    const updated = await apiPost('/api/assistants/' + selectedId + '/publish');
+    const idx = assistants.findIndex(x => x.id === selectedId);
+    if (idx !== -1) assistants[idx] = updated;
+    updatePublishButton(updated);
+    document.getElementById('publishBanner').classList.add('visible');
+    document.getElementById('publishUrl').textContent = updated.public_url || (window.location.origin + '/a/' + selectedId);
+    renderAssistantList('');
+    isDirty = false;
+    updatePublishDirtyState();
+    showToast('Settings saved & published!', 'success');
+}
+
+// ═══════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+    const el = document.getElementById('tab-' + tab);
+    if (el) el.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════
+// CHAT MODE (Talk to Assistant)
+// ═══════════════════════════════════════════════
+function enterChatMode() {
+    if (!selectedId) return;
+    const a = assistants.find(x => x.id === selectedId);
+    if (!a) return;
+
+    isChatMode = true;
+    document.getElementById('settingsPanel').style.display = 'none';
+    document.getElementById('chatPanel').classList.add('visible');
+    document.getElementById('tabsBar').style.display = 'none';
+    document.getElementById('chatNameLabel').textContent = a.name;
+    document.getElementById('chatMessages').innerHTML = '';
+
+    // Update talk button
+    document.getElementById('talkBtn').textContent = '← Settings';
+    document.getElementById('talkBtn').onclick = exitChatMode;
+
+    // Create VoiceSDK instance
+    if (voiceInstance) {
+        voiceInstance.destroy();
+        voiceInstance = null;
+    }
+
+    voiceInstance = new VoiceSDK({
+        serverUrl: API,
+        systemPrompt: a.system_prompt || 'You are a helpful assistant.',
+        greeting: a.first_message || null,
+        model: a.openai_model || undefined,
+        ttsModel: a.tts_model || undefined,
+        temperature: a.temperature != null ? a.temperature : 0.7,
+        maxTokens: a.max_tokens != null ? a.max_tokens : 200,
+        onUserTranscript: function (text) { chatRemoveThinking(); chatAddMsg(text, 'user'); },
+        onAIResponse: function (text) { chatRemoveThinking(); chatAddMsg(text, 'ai'); },
+        onStateChange: function (state) { chatUpdateStatus(state); if (state === 'thinking') chatShowThinking(); },
+        onInterim: function (text) { if (text) chatShowInterim(text); else chatRemoveInterim(); },
+        onError: function (err) { chatShowError(err.message); }
+    });
+
+    // Bind chat buttons
+    document.getElementById('chatCallBtn').onclick = function () {
+        voiceInstance.toggleCall();
+        this.classList.toggle('call-active', voiceInstance.isActive());
+    };
+    document.getElementById('chatSendBtn').onclick = chatSendText;
+    document.getElementById('chatTextInput').onkeydown = function (e) { if (e.key === 'Enter') chatSendText(); };
+}
+
+function exitChatMode() {
+    isChatMode = false;
+    if (voiceInstance) {
+        voiceInstance.destroy();
+        voiceInstance = null;
+    }
+    document.getElementById('settingsPanel').style.display = 'block';
+    document.getElementById('chatPanel').classList.remove('visible');
+    document.getElementById('tabsBar').style.display = 'flex';
+
+    // Restore talk button
+    document.getElementById('talkBtn').textContent = '📞 Talk to Assistant';
+    document.getElementById('talkBtn').onclick = enterChatMode;
+
+    // Reset call button
+    document.getElementById('chatCallBtn').classList.remove('call-active');
+}
+
+function chatSendText() {
+    const input = document.getElementById('chatTextInput');
+    const text = input.value.trim();
+    if (!text || !voiceInstance) return;
+    input.value = '';
+    voiceInstance.sendText(text);
+}
+
+// ─── Chat UI Helpers ───
+
+function chatAddMsg(text, type) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + type;
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    if (type === 'ai') {
+        div.innerHTML = '<span class="avatar-sm">AI</span>' + escHtml(text) + '<div class="time">' + time + '</div>';
+    } else {
+        div.innerHTML = escHtml(text) + '<div class="time">' + time + '</div>';
+    }
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+let chatInterimDiv = null;
+function chatShowInterim(text) {
+    const container = document.getElementById('chatMessages');
+    if (!chatInterimDiv) {
+        chatInterimDiv = document.createElement('div');
+        chatInterimDiv.className = 'chat-msg interim';
+        container.appendChild(chatInterimDiv);
+    }
+    chatInterimDiv.textContent = text;
+    container.scrollTop = container.scrollHeight;
+}
+function chatRemoveInterim() { if (chatInterimDiv) { chatInterimDiv.remove(); chatInterimDiv = null; } }
+
+function chatShowThinking() {
+    chatRemoveThinking();
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg thinking';
+    div.id = 'chatThinkingMsg';
+    div.innerHTML = '<span class="avatar-sm">AI</span> thinking...';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+function chatRemoveThinking() {
+    const el = document.getElementById('chatThinkingMsg');
+    if (el) el.remove();
+}
+
+function chatShowError(msg) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg';
+    div.style.cssText = 'align-self:center; background:#7f1d1d; color:#fca5a5; font-size:12px; padding:8px 14px;';
+    div.textContent = '⚠ ' + msg;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    setTimeout(() => div.remove(), 5000);
+}
+
+function chatUpdateStatus(state) {
+    const bar = document.getElementById('chatStatusBar');
+    const header = document.getElementById('chatHeaderStatus');
+    bar.className = 'chat-status-bar';
+    if (state === 'idle') {
+        bar.classList.remove('visible');
+        header.textContent = 'Online';
+    } else if (state === 'listening') {
+        bar.classList.add('visible', 'listening');
+        bar.textContent = '🎤 Listening...';
+        header.textContent = 'On call';
+    } else if (state === 'thinking') {
+        bar.classList.add('visible', 'thinking');
+        bar.textContent = '💭 Thinking...';
+        header.textContent = 'On call';
+    } else if (state === 'speaking') {
+        bar.classList.add('visible', 'speaking');
+        bar.textContent = '🔊 Speaking...';
+        header.textContent = 'On call';
+    }
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function escHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str));
+    return d.innerHTML;
+}
+
+function showSaveIndicator() {
+    const el = document.getElementById('saveIndicator');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function markDirty() {
+    isDirty = true;
+    updatePublishDirtyState();
+}
+
+function updatePublishDirtyState() {
+    const btn = document.getElementById('publishBtn');
+    if (!selectedId) return;
+    const a = assistants.find(x => x.id === selectedId);
+    if (!a) return;
+    // If already published, button always interactive (for unpublish)
+    if (a.published) {
+        btn.classList.remove('dirty');
+        return;
+    }
+    // For unpublished: light up only when changes made
+    if (isDirty) {
+        btn.classList.add('dirty');
+        btn.textContent = '💾 Save & Publish';
+    } else {
+        btn.classList.remove('dirty');
+        btn.textContent = 'Save & Publish';
+    }
+}
+
+function showToast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast ' + type + ' show';
+    setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>

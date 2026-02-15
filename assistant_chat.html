@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f1117;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 440px;
+            height: 720px;
+            background: #161821;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #2a2d3a;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+        .chat-header .avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .chat-header .info { flex: 1; }
+        .chat-header .info h3 { font-size: 16px; font-weight: 600; }
+        .chat-header .info span { font-size: 12px; opacity: 0.85; }
+        .new-chat-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .new-chat-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .status-bar {
+            text-align: center; font-size: 12px; color: #6b7280;
+            padding: 4px; background: #1a1d2e; display: none;
+        }
+        .status-bar.visible { display: block; }
+        .status-bar.listening { color: #22d3ee; }
+        .status-bar.thinking  { color: #9ca3af; }
+        .status-bar.speaking  { color: #10b981; }
+
+        .chat-messages {
+            flex: 1; padding: 16px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+            background: #1a1d2e;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 2px; }
+
+        .message {
+            max-width: 80%; padding: 10px 16px; border-radius: 16px;
+            font-size: 14px; line-height: 1.45;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .message .time { font-size: 11px; opacity: 0.5; margin-top: 4px; }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.ai {
+            align-self: flex-start;
+            background: #252838;
+            color: #e1e1e6;
+            border-bottom-left-radius: 4px;
+        }
+        .message.ai .avatar-inline {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: #22d3ee;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 11px; color: #0f1117;
+            margin-right: 6px; vertical-align: middle;
+        }
+        .message.interim {
+            align-self: flex-end;
+            background: rgba(34,211,238,0.1);
+            color: #6b7280;
+            border: 1px dashed #22d3ee;
+            font-style: italic;
+            border-bottom-right-radius: 4px;
+        }
+        .message.thinking {
+            align-self: flex-start;
+            background: #252838;
+            color: #6b7280;
+            font-style: italic;
+            animation: blink 1s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.4; }
+            50%      { opacity: 1; }
+        }
+
+        .error-toast {
+            align-self: center;
+            background: #7f1d1d; color: #fca5a5;
+            padding: 8px 14px; border-radius: 8px; font-size: 12px;
+        }
+
+        .chat-input-area {
+            padding: 12px 16px 20px;
+            background: #161821;
+            border-top: 1px solid #2a2d3a;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .chat-input-area input {
+            flex: 1; border: 2px solid #2a2d3a; border-radius: 24px;
+            padding: 10px 18px; font-size: 14px; outline: none;
+            background: #252838; color: #e1e1e6;
+        }
+        .chat-input-area input:focus { border-color: #22d3ee; }
+        .chat-input-area input::placeholder { color: #4b5563; }
+
+        .icon-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 2px solid #22d3ee; background: transparent;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { background: #164e63; }
+        .icon-btn svg { width: 20px; height: 20px; fill: #22d3ee; }
+
+        .icon-btn.call-active {
+            background: #dc2626; border-color: #dc2626;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .icon-btn.call-active svg { fill: white; }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+            50%      { box-shadow: 0 0 0 10px rgba(220,38,38,0); }
+        }
+
+        .send-btn {
+            width: 42px; height: 42px; border-radius: 50%; border: none;
+            background: #22d3ee; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .send-btn:hover { background: #0891b2; }
+        .send-btn svg { width: 18px; height: 18px; fill: #0f1117; }
+
+        .loading-screen {
+            display: flex; align-items: center; justify-content: center;
+            height: 100vh; width: 100vw; color: #6b7280; font-size: 16px;
+        }
+
+        .powered-by {
+            text-align: center; padding: 6px; font-size: 10px; color: #4b5563;
+            background: #161821;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loadingScreen" class="loading-screen">Loading assistant...</div>
+
+<div class="chat-container" id="chatContainer" style="display:none;">
+    <div class="chat-header">
+        <div class="avatar" id="avatarEl">🤖</div>
+        <div class="info">
+            <h3 id="assistantName">Assistant</h3>
+            <span id="headerStatus">Online</span>
+        </div>
+        <button class="new-chat-btn" id="newChatBtn">+ New chat</button>
+    </div>
+
+    <div class="status-bar" id="statusBar"></div>
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="chat-input-area">
+        <button class="icon-btn" id="callBtn" title="Voice call">
+            <svg viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+        </button>
+        <input type="text" id="textInput" placeholder="Type your message..." />
+        <button class="send-btn" id="sendBtn" title="Send">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+    </div>
+    <div class="powered-by">Powered by AI Voice Platform</div>
+</div>
+
+<script src="/voicesdk.js"></script>
+<script>
+(function() {
+    // Extract assistant ID from URL path: /a/{id}
+    var pathParts = window.location.pathname.split('/');
+    var assistantId = pathParts[pathParts.length - 1];
+
+    if (!assistantId) {
+        document.getElementById('loadingScreen').textContent = 'Error: No assistant ID in URL';
+        return;
+    }
+
+    // Load assistant config from server
+    fetch(window.location.origin + '/api/assistant/' + assistantId + '/config')
+        .then(function(r) {
+            if (!r.ok) throw new Error('Assistant not found or not published');
+            return r.json();
+        })
+        .then(function(config) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'flex';
+            document.getElementById('assistantName').textContent = config.name;
+            document.title = config.name + ' — AI Assistant';
+
+            // Get first letter for avatar
+            var initial = (config.name || 'A')[0].toUpperCase();
+            document.getElementById('avatarEl').textContent = initial;
+
+            // Initialize VoiceSDK with assistant config
+            var voice = new VoiceSDK({
+                serverUrl: window.location.origin,
+                systemPrompt: config.system_prompt,
+                greeting: config.first_message || null,
+                model: config.openai_model,
+                ttsModel: config.tts_model,
+                temperature: config.temperature,
+                maxTokens: config.max_tokens,
+                onUserTranscript: function(text) { removeThinking(); addMessage(text, 'user'); },
+                onAIResponse: function(text) { removeThinking(); addMessage(text, 'ai'); },
+                onStateChange: function(state) { updateStatus(state); if (state === 'thinking') showThinking(); },
+                onInterim: function(text) { if (text) showInterim(text); else removeInterim(); },
+                onError: function(err) { showError(err.message); }
+            });
+
+            // Voice call button
+            document.getElementById('callBtn').onclick = function() {
+                voice.toggleCall();
+                this.classList.toggle('call-active', voice.isActive());
+            };
+
+            // Send text
+            document.getElementById('sendBtn').onclick = sendMsg;
+            document.getElementById('textInput').onkeydown = function(e) { if (e.key === 'Enter') sendMsg(); };
+            function sendMsg() {
+                var inp = document.getElementById('textInput');
+                var t = inp.value.trim();
+                if (!t) return;
+                inp.value = '';
+                voice.sendText(t);
+            }
+
+            // New chat
+            document.getElementById('newChatBtn').onclick = function() {
+                document.getElementById('chatMessages').innerHTML = '';
+                voice.clearHistory();
+                if (voice.isActive()) {
+                    voice.endCall();
+                    document.getElementById('callBtn').classList.remove('call-active');
+                }
+            };
+        })
+        .catch(function(err) {
+            document.getElementById('loadingScreen').textContent = 'Error: ' + err.message;
+        });
+
+    // ─── UI Helpers ───
+    function addMessage(text, type) {
+        var c = document.getElementById('chatMessages');
+        var d = document.createElement('div');
+        d.className = 'message ' + type;
+        var now = new Date();
+        var time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        if (type === 'ai') {
+            var initial = (document.getElementById('assistantName').textContent || 'A')[0];
+            d.innerHTML = '<span class="avatar-inline">' + initial + '</span>' + esc(text) + '<div class="time">' + time + '</div>';
+        } else {
+            d.innerHTML = esc(text) + '<div class="time">' + time + '</div>';
+        }
+        c.appendChild(d);
+        c.scrollTop = c.scrollHeight;
+    }
+
+    var interimDiv = null;
+    function showInterim(text) {
+        var c = document.getElementById('chatMessages');
+        if (!interimDiv) { interimDiv = document.createElement('div'); interimDiv.className = 'message interim'; c.appendChild(interimDiv); }
+        interimDiv.textContent = text;
+        c.scrollTop = c.scrollHeight;
+    }
+    function removeInterim() { if (interimDiv) { interimDiv.remove(); interimDiv = null; } }
+
+    function showThinking() {
+        removeThinking();
+        var c = document.getElementById('chatMessages');
+        var d = document.createElement('div');
+        d.className = 'message thinking'; d.id = 'thinkingMsg';
+        var initial = (document.getElementById('assistantName').textContent || 'A')[0];
+        d.innerHTML = '<span class="avatar-inline">' + initial + '</span> thinking...';
+        c.appendChild(d); c.scrollTop = c.scrollHeight;
+    }
+    function removeThinking() { var e = document.getElementById('thinkingMsg'); if (e) e.remove(); }
+
+    function showError(msg) {
+        var c = document.getElementById('chatMessages');
+        var d = document.createElement('div');
+        d.className = 'error-toast'; d.textContent = '⚠ ' + msg;
+        c.appendChild(d); c.scrollTop = c.scrollHeight;
+        setTimeout(function() { d.remove(); }, 5000);
+    }
+
+    function updateStatus(state) {
+        var bar = document.getElementById('statusBar');
+        var hdr = document.getElementById('headerStatus');
+        bar.className = 'status-bar';
+        if (state === 'idle') { bar.classList.remove('visible'); hdr.textContent = 'Online'; }
+        else if (state === 'listening') { bar.classList.add('visible','listening'); bar.textContent = '🎤 Listening...'; hdr.textContent = 'On call'; }
+        else if (state === 'thinking') { bar.classList.add('visible','thinking'); bar.textContent = '💭 Thinking...'; hdr.textContent = 'On call'; }
+        else if (state === 'speaking') { bar.classList.add('visible','speaking'); bar.textContent = '🔊 Speaking...'; hdr.textContent = 'On call'; }
+    }
+
+    function esc(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
+})();
+</script>
+</body>
+</html>

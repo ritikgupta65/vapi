@@ -3,7 +3,7 @@ import logging
 import asyncio
 from typing import AsyncGenerator, Protocol
 from abc import ABC, abstractmethod
-from deepgram import DeepgramClient, SpeakOptions
+from deepgram import DeepgramClient
 from elevenlabs import AsyncElevenLabs
 from openai import AsyncOpenAI
 from config import settings
@@ -37,19 +37,16 @@ class DeepgramTTS(TTSProvider):
     async def synthesize(self, text: str) -> AsyncGenerator[bytes, None]:
         """Synthesize using Deepgram."""
         try:
-            options = SpeakOptions(
+            # SDK v5.3.2 API: speak.v1.audio.generate() returns Iterator[bytes]
+            audio_iter = self.client.speak.v1.audio.generate(
+                text=text,
                 model="aura-asteria-en",
                 encoding="linear16",
                 sample_rate=16000,
             )
             
-            response = self.client.speak.v("1").stream(
-                {"text": text},
-                options
-            )
-            
             # Stream audio chunks
-            for chunk in response.stream_memory:
+            for chunk in audio_iter:
                 if chunk:
                     yield chunk
                     

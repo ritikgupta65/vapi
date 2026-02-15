@@ -11,7 +11,8 @@ if __name__ == "__main__":
     print("🚀 Starting Speech-to-Speech AI Server")
     print("="*60)
     print("Server running at: http://localhost:5000")
-    print("Test page: Open test_speech.html in your browser")
+    print("Dashboard:         http://localhost:5000/dashboard")
+    print("Test page:         Open test_speech.html in your browser")
     print("="*60 + "\n")
     
     app.run(host="0.0.0.0", port=5000, debug=False)

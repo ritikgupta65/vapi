@@ -12,7 +12,7 @@ import uuid
 import subprocess
 import tempfile
 from datetime import datetime
-from flask import Flask, request, jsonify, Response, stream_with_context, send_file
+from flask import Flask, request, jsonify, Response, stream_with_context, send_file, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -99,7 +99,36 @@ print("  POST /speech-to-speech - Full pipeline")
 print("  GET  /                 - Health check")
 print("  GET  /voicesdk.js      - Embeddable SDK")
 print("  GET  /integration-example - Demo page")
+print("  GET  /dashboard        - Assistant Manager")
+print("  GET  /a/<id>           - Published Assistant")
 print("="*50 + "\n")
+
+
+# -------------------------
+# ASSISTANT STORAGE HELPERS
+# -------------------------
+ASSISTANTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assistants_db.json")
+
+def _load_assistants():
+    """Load assistants from JSON file."""
+    try:
+        with open(ASSISTANTS_FILE, "r") as f:
+            data = json.load(f)
+            return data.get("assistants", [])
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def _save_assistants(assistants_list):
+    """Save assistants to JSON file."""
+    with open(ASSISTANTS_FILE, "w") as f:
+        json.dump({"assistants": assistants_list}, f, indent=2)
+
+def _find_assistant(assistant_id):
+    """Find an assistant by ID."""
+    for a in _load_assistants():
+        if a["id"] == assistant_id:
+            return a
+    return None
 
 
 # -------------------------
@@ -126,6 +155,143 @@ def serve_integration_example():
     return send_file(
         os.path.join(os.path.dirname(__file__), "integration-example.html")
     )
+
+
+@app.route("/dashboard", methods=["GET"])
+def serve_dashboard():
+    """Serve the assistant management dashboard."""
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), "dashboard.html")
+
+
+@app.route("/a/<assistant_id>", methods=["GET"])
+def serve_assistant_page(assistant_id):
+    """Serve a standalone chat page for a published assistant."""
+    assistant = _find_assistant(assistant_id)
+    if not assistant:
+        return jsonify({"error": "Assistant not found"}), 404
+    if not assistant.get("published"):
+        return jsonify({"error": "Assistant is not published"}), 403
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), "assistant_chat.html")
+
+
+@app.route("/api/assistant/<assistant_id>/config", methods=["GET"])
+def get_assistant_config(assistant_id):
+    """Get published assistant config for the chat page."""
+    assistant = _find_assistant(assistant_id)
+    if not assistant:
+        return jsonify({"error": "Assistant not found"}), 404
+    if not assistant.get("published"):
+        return jsonify({"error": "Assistant is not published"}), 403
+    return jsonify({
+        "id": assistant["id"],
+        "name": assistant["name"],
+        "first_message": assistant.get("first_message", ""),
+        "system_prompt": assistant.get("system_prompt", ""),
+        "openai_model": assistant.get("openai_model", "gpt-4o-mini"),
+        "tts_model": assistant.get("tts_model", "aura-asteria-en"),
+        "stt_model": assistant.get("stt_model", "nova-2"),
+        "temperature": assistant.get("temperature", 0.7),
+        "max_tokens": assistant.get("max_tokens", 200),
+    })
+
+
+# -------------------------
+# ASSISTANT CRUD ENDPOINTS
+# -------------------------
+@app.route("/api/assistants", methods=["GET"])
+def list_assistants():
+    """List all assistants."""
+    return jsonify({"assistants": _load_assistants()})
+
+
+@app.route("/api/assistants", methods=["POST"])
+def create_assistant():
+    """Create a new assistant."""
+    data = request.get_json() or {}
+    assistant = {
+        "id": str(uuid.uuid4()),
+        "name": data.get("name", "New Assistant"),
+        "openai_model": data.get("openai_model", "gpt-4o-mini"),
+        "stt_model": data.get("stt_model", "nova-2"),
+        "tts_model": data.get("tts_model", "aura-asteria-en"),
+        "first_message": data.get("first_message", "Hello! How can I help you today?"),
+        "system_prompt": data.get("system_prompt", "You are a helpful voice assistant. Keep responses concise and conversational. Use short sentences suitable for speech."),
+        "temperature": data.get("temperature", 0.7),
+        "max_tokens": data.get("max_tokens", 200),
+        "published": False,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    all_assistants = _load_assistants()
+    all_assistants.append(assistant)
+    _save_assistants(all_assistants)
+    return jsonify(assistant), 201
+
+
+@app.route("/api/assistants/<assistant_id>", methods=["GET"])
+def get_assistant(assistant_id):
+    """Get a single assistant by ID."""
+    assistant = _find_assistant(assistant_id)
+    if not assistant:
+        return jsonify({"error": "Assistant not found"}), 404
+    return jsonify(assistant)
+
+
+@app.route("/api/assistants/<assistant_id>", methods=["PUT"])
+def update_assistant(assistant_id):
+    """Update an assistant."""
+    all_assistants = _load_assistants()
+    for i, a in enumerate(all_assistants):
+        if a["id"] == assistant_id:
+            data = request.get_json() or {}
+            for key in ["name", "openai_model", "stt_model", "tts_model", "first_message", "system_prompt", "temperature", "max_tokens"]:
+                if key in data:
+                    all_assistants[i][key] = data[key]
+            all_assistants[i]["updated_at"] = datetime.utcnow().isoformat()
+            _save_assistants(all_assistants)
+            return jsonify(all_assistants[i])
+    return jsonify({"error": "Assistant not found"}), 404
+
+
+@app.route("/api/assistants/<assistant_id>", methods=["DELETE"])
+def delete_assistant(assistant_id):
+    """Delete an assistant."""
+    all_assistants = _load_assistants()
+    new_list = [a for a in all_assistants if a["id"] != assistant_id]
+    if len(new_list) == len(all_assistants):
+        return jsonify({"error": "Assistant not found"}), 404
+    _save_assistants(new_list)
+    return jsonify({"status": "deleted"})
+
+
+@app.route("/api/assistants/<assistant_id>/publish", methods=["POST"])
+def publish_assistant(assistant_id):
+    """Publish an assistant - makes it accessible via unique URL."""
+    all_assistants = _load_assistants()
+    for i, a in enumerate(all_assistants):
+        if a["id"] == assistant_id:
+            all_assistants[i]["published"] = True
+            all_assistants[i]["updated_at"] = datetime.utcnow().isoformat()
+            _save_assistants(all_assistants)
+            base_url = request.host_url.rstrip("/")
+            return jsonify({
+                **all_assistants[i],
+                "public_url": f"{base_url}/a/{assistant_id}"
+            })
+    return jsonify({"error": "Assistant not found"}), 404
+
+
+@app.route("/api/assistants/<assistant_id>/unpublish", methods=["POST"])
+def unpublish_assistant(assistant_id):
+    """Unpublish an assistant."""
+    all_assistants = _load_assistants()
+    for i, a in enumerate(all_assistants):
+        if a["id"] == assistant_id:
+            all_assistants[i]["published"] = False
+            all_assistants[i]["updated_at"] = datetime.utcnow().isoformat()
+            _save_assistants(all_assistants)
+            return jsonify(all_assistants[i])
+    return jsonify({"error": "Assistant not found"}), 404
 
 
 # -------------------------
@@ -290,6 +456,14 @@ def text_to_speech():
         
         # Generate speech (v5 SDK - keyword args)
         model = data.get("model", "aura-asteria-en")
+        
+        # Check if using an assistant's TTS settings
+        assistant_id = data.get("assistant_id")
+        if assistant_id:
+            asst = _find_assistant(assistant_id)
+            if asst:
+                model = asst.get("tts_model", model)
+        
         encoding = data.get("encoding", "linear16")
         
         audio_data = b""
@@ -303,16 +477,23 @@ def text_to_speech():
         
         print(f"[TTS] Generated {len(audio_data)} bytes of audio")
         
-        # Add WAV header if raw PCM (linear16 is raw PCM)
-        if encoding == "linear16" and not audio_data.startswith(b'RIFF'):
-            # Create WAV header for 16-bit mono 16kHz audio
+        # Ensure proper WAV header with correct sizes
+        if encoding == "linear16":
             sample_rate = 16000
             num_channels = 1
             bits_per_sample = 16
             byte_rate = sample_rate * num_channels * bits_per_sample // 8
             block_align = num_channels * bits_per_sample // 8
-            data_size = len(audio_data)
             
+            # Strip existing WAV header if present (Deepgram often sends a header with wrong size)
+            pcm_data = audio_data
+            if audio_data[:4] == b'RIFF':
+                # Find the 'data' chunk and extract raw PCM
+                data_pos = audio_data.find(b'data')
+                if data_pos != -1:
+                    pcm_data = audio_data[data_pos + 8:]  # skip 'data' + 4-byte size
+            
+            data_size = len(pcm_data)
             wav_header = struct.pack('<4sI4s4sIHHIIHH4sI',
                 b'RIFF',
                 36 + data_size,
@@ -328,8 +509,8 @@ def text_to_speech():
                 b'data',
                 data_size
             )
-            audio_data = wav_header + audio_data
-            print(f"[TTS] Added WAV header, total size: {len(audio_data)} bytes")
+            audio_data = wav_header + pcm_data
+            print(f"[TTS] WAV header written, total size: {len(audio_data)} bytes")
         
         # Return as base64 or raw
         return_format = data.get("format", "base64")
@@ -378,9 +559,22 @@ def chat():
         if not messages:
             return jsonify({"error": "Missing 'messages' field"}), 400
         
-        model = data.get("model", DEFAULT_MODEL)
-        temperature = data.get("temperature", 0.7)
-        max_tokens = data.get("max_tokens", 500)
+        # Check if using an assistant's settings
+        assistant_id = data.get("assistant_id")
+        if assistant_id:
+            asst = _find_assistant(assistant_id)
+            if asst:
+                model = asst.get("openai_model", DEFAULT_MODEL)
+                temperature = data.get("temperature", asst.get("temperature", 0.7))
+                max_tokens = data.get("max_tokens", asst.get("max_tokens", 200))
+            else:
+                model = data.get("model", DEFAULT_MODEL)
+                temperature = data.get("temperature", 0.7)
+                max_tokens = data.get("max_tokens", 500)
+        else:
+            model = data.get("model", DEFAULT_MODEL)
+            temperature = data.get("temperature", 0.7)
+            max_tokens = data.get("max_tokens", 500)
         
         # Call OpenAI
         response = openai_client.chat.completions.create(
@@ -513,6 +707,15 @@ def test_tts():
             sample_rate=16000,
         ):
             audio_data += chunk
+        
+        # Fix WAV header (Deepgram sends placeholder sizes)
+        if audio_data[:4] == b'RIFF':
+            data_pos = audio_data.find(b'data')
+            if data_pos != -1:
+                pcm = audio_data[data_pos + 8:]
+                hdr = struct.pack('<4sI4s4sIHHIIHH4sI',
+                    b'RIFF', 36+len(pcm), b'WAVE', b'fmt ', 16, 1, 1, 16000, 32000, 2, 16, b'data', len(pcm))
+                audio_data = hdr + pcm
         
         return audio_data, 200, {'Content-Type': 'audio/wav'}
     
