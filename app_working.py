@@ -16,7 +16,15 @@ import warnings
 import urllib.request
 import urllib.error
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="audioop")
-import audioop
+# ...existing code...
+try:
+    import audioop  # Python <= 3.12 (built-in)
+except ModuleNotFoundError:
+    try:
+        import audioop_lts as audioop  # Python 3.13+ (installed via pip)
+    except ModuleNotFoundError:
+        raise RuntimeError("audioop not available. Run: pip install audioop-lts")
+# ...existing code...
 
 # Try to import required packages
 try:
