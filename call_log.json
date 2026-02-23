@@ -1,0 +1,179 @@
+{
+  "calls": [
+    {
+      "id": "09df5f02-c91",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CA5d96f179a593dc1fce7bd942d4ce04f6",
+      "status": "completed",
+      "created_at": "2026-02-23T13:25:32.201788",
+      "duration": "67"
+    },
+    {
+      "id": "2b36252a-3f6",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAa8af678efa3993e4b5412741b915d894",
+      "status": "queued",
+      "created_at": "2026-02-23T13:24:43.870019"
+    },
+    {
+      "id": "57ef3983-01b",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CA8361a4e7d615379b5283972ba29609ac",
+      "status": "queued",
+      "created_at": "2026-02-23T13:23:29.947040"
+    },
+    {
+      "id": "2ed6ee97-565",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAb93e06b708f28440800d6bdbe66ba9c3",
+      "status": "busy",
+      "created_at": "2026-02-23T12:37:13.185913",
+      "duration": "0"
+    },
+    {
+      "id": "0b62286e-975",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAce1d67a4e5750d428837e137a516a1cb",
+      "status": "completed",
+      "created_at": "2026-02-23T12:35:50.944554",
+      "duration": "80"
+    },
+    {
+      "id": "45ce9157-af5",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CA2a49bfaf91b8301198ea2f0bf594649a",
+      "status": "completed",
+      "created_at": "2026-02-23T12:15:21.512069",
+      "duration": "78"
+    },
+    {
+      "id": "8b0454a1-b9f",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAcacda141b60c663216837004bf2d00ac",
+      "status": "completed",
+      "created_at": "2026-02-23T11:51:11.213862",
+      "duration": "58"
+    },
+    {
+      "id": "578caae6-9d9",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAfa44969cadefce686ae63add0264368d",
+      "status": "completed",
+      "created_at": "2026-02-23T11:42:19.486387",
+      "duration": "28"
+    },
+    {
+      "id": "11b1ae79-17b",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CA311fc045565e7aebf3b777ffe772b4c5",
+      "status": "busy",
+      "created_at": "2026-02-23T08:03:34.036064",
+      "duration": "0"
+    },
+    {
+      "id": "9d9019a8-1e7",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAc7a5274ebb71c3055251c88e64b633e0",
+      "status": "completed",
+      "created_at": "2026-02-23T08:03:31.048346",
+      "duration": "30"
+    },
+    {
+      "id": "3337200f-1f7",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAf0efe6db60ef100a4887d2fb5659ad75",
+      "status": "completed",
+      "created_at": "2026-02-21T13:01:24.951113",
+      "duration": "38"
+    },
+    {
+      "id": "d0d0c119-a81",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CA338cfc184be1994a0d7d7fa68e46c1fa",
+      "status": "no-answer",
+      "created_at": "2026-02-21T13:00:59.968534",
+      "duration": "0"
+    },
+    {
+      "id": "40d10a88-a2c",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritik",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAf0a24ff484831550ced832362e6e07af",
+      "status": "queued",
+      "created_at": "2026-02-17T20:49:29.247537"
+    },
+    {
+      "id": "53486c44-9cd",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritik",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAc1d1e9718d9b9c33505a918fff1d00da",
+      "status": "queued",
+      "created_at": "2026-02-17T20:49:01.896016"
+    },
+    {
+      "id": "4ab75475-50e",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritik",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CAff18e4600172956a42800df26e7141ee",
+      "status": "queued",
+      "created_at": "2026-02-17T20:47:43.912337"
+    }
+  ]
+}
