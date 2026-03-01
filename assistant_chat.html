@@ -28,33 +28,43 @@
         }
 
         .chat-header {
-            background: linear-gradient(135deg, #22d3ee, #0891b2);
-            padding: 14px 20px;
+            background: linear-gradient(135deg, #1a3a4a, #1e4d5e, #22647a);
+            padding: 14px 18px;
             display: flex;
             align-items: center;
             gap: 12px;
-            color: white;
+            color: #f0f6f8;
         }
         .chat-header .avatar {
             width: 40px; height: 40px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            border: 1.5px solid rgba(255,255,255,0.2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 18px;
+            font-size: 16px; font-weight: 700; color: #e0f2f7;
+            flex-shrink: 0;
         }
-        .chat-header .info { flex: 1; }
-        .chat-header .info h3 { font-size: 16px; font-weight: 600; }
-        .chat-header .info span { font-size: 12px; opacity: 0.85; }
-        .new-chat-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.4);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 16px;
+        .chat-header .info { flex: 1; min-width: 0; }
+        .chat-header .info h3 { font-size: 15px; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-header .info span { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 400; }
+        .header-pill-btn {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #e0f2f7;
+            padding: 7px 16px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .new-chat-btn:hover { background: rgba(255,255,255,0.3); }
+        .header-pill-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
+        .header-pill-btn svg { width: 14px; height: 14px; }
 
         .status-bar {
             text-align: center; font-size: 12px; color: #6b7280;
@@ -189,12 +199,19 @@
 
 <div class="chat-container" id="chatContainer" style="display:none;">
     <div class="chat-header">
-        <div class="avatar" id="avatarEl">🤖</div>
+        <div class="avatar" id="avatarEl">A</div>
         <div class="info">
             <h3 id="assistantName">Assistant</h3>
             <span id="headerStatus">Online</span>
         </div>
-        <button class="new-chat-btn" id="newChatBtn">+ New chat</button>
+        <button class="header-pill-btn" id="newChatBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            New Chat
+        </button>
+        <button class="header-pill-btn" onclick="window.history.back()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back to Settings
+        </button>
     </div>
 
     <div class="status-bar" id="statusBar"></div>
@@ -212,8 +229,9 @@
     <div class="powered-by">Powered by AI Voice Platform</div>
 </div>
 
-<script src="/voicesdk.js"></script>
+<script src="/voicesdk.js?v=3"></script>
 <script>
+console.log('[assistant_chat] v3 loaded — streaming display active');
 (function() {
     // Extract assistant ID from URL path: /a/{id}
     var pathParts = window.location.pathname.split('/');
@@ -249,8 +267,9 @@
                 ttsModel: config.tts_model,
                 temperature: config.temperature,
                 maxTokens: config.max_tokens,
-                onUserTranscript: function(text) { removeThinking(); addMessage(text, 'user'); },
-                onAIResponse: function(text) { removeThinking(); addMessage(text, 'ai'); },
+                onUserTranscript: function(text) { removeThinking(); _endStream(); addMessage(text, 'user'); },
+                onAIPartial: function(text) { removeThinking(); updateOrAddAIMessage(text); },
+                onAIResponse: function(text) { removeThinking(); _finalizeAIMessage(text); },
                 onStateChange: function(state) { updateStatus(state); if (state === 'thinking') showThinking(); },
                 onInterim: function(text) { if (text) showInterim(text); else removeInterim(); },
                 onError: function(err) { showError(err.message); }
@@ -289,6 +308,9 @@
 
     // ─── UI Helpers ───
     function addMessage(text, type) {
+        // When a new user message arrives, finalize any in-progress AI stream
+        if (type === 'user') _endStream();
+
         var c = document.getElementById('chatMessages');
         var d = document.createElement('div');
         d.className = 'message ' + type;
@@ -302,6 +324,101 @@
         }
         c.appendChild(d);
         c.scrollTop = c.scrollHeight;
+    }
+
+    // ───── Progressive AI message (streaming tokens + sentence overflow) ─────
+    //
+    // onAIPartial → tokens stream into ONE chat bubble, updated in-place.
+    //   When that bubble has ≥5 sentences, it freezes and a new bubble starts.
+    // onAIResponse → called ONCE at the end with final text → finalize bubble.
+    //
+    var _liveBubble      = null;   // direct DOM reference to the active bubble
+    var _liveTimer       = null;   // setTimeout id for auto-finalization
+    var _bubbleStartIdx  = 0;      // char offset in fullText where this bubble starts
+    var MAX_SENTENCES    = 5;
+
+    function _endStream() {
+        if (_liveBubble) {
+            _liveBubble.removeAttribute('data-streaming');
+            _liveBubble = null;
+        }
+        _bubbleStartIdx = 0;
+        if (_liveTimer) { clearTimeout(_liveTimer); _liveTimer = null; }
+    }
+
+    function _countSentences(s) {
+        var m = s.match(/[.!?]+(?:\s|$)/g);
+        return m ? m.length : 0;
+    }
+
+    function _splitAfterNthSentence(text, n) {
+        var count = 0;
+        for (var i = 0; i < text.length; i++) {
+            if (text[i] === '.' || text[i] === '!' || text[i] === '?') {
+                while (i + 1 < text.length && /[.!?]/.test(text[i + 1])) i++;
+                count++;
+                if (count === n) {
+                    var pos = i + 1;
+                    while (pos < text.length && text[pos] === ' ') pos++;
+                    return [text.substring(0, pos), text.substring(pos)];
+                }
+            }
+        }
+        return [text, ''];
+    }
+
+    // Called on every token — updates a single bubble in-place
+    function updateOrAddAIMessage(fullText) {
+        var c = document.getElementById('chatMessages');
+        var initial = (document.getElementById('assistantName').textContent || 'A')[0];
+        var now = new Date();
+        var time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+        var bubbleText = fullText.substring(_bubbleStartIdx);
+
+        // Sentence overflow: freeze current bubble when it hits MAX_SENTENCES
+        while (_liveBubble && _countSentences(bubbleText) > MAX_SENTENCES) {
+            var parts = _splitAfterNthSentence(bubbleText, MAX_SENTENCES);
+            _liveBubble.innerHTML = '<span class="avatar-inline">' + initial + '</span>'
+                + esc(parts[0].trim()) + '<div class="time">' + time + '</div>';
+            _liveBubble.removeAttribute('data-streaming');
+            _liveBubble = null;
+            _bubbleStartIdx += parts[0].length;
+            bubbleText = parts[1];
+        }
+
+        // Create bubble on first token, reuse on subsequent tokens
+        if (!_liveBubble) {
+            _liveBubble = document.createElement('div');
+            _liveBubble.className = 'message ai';
+            _liveBubble.setAttribute('data-streaming', '1');
+            c.appendChild(_liveBubble);
+        }
+
+        // Update content in-place (single bubble, progressive typing)
+        _liveBubble.innerHTML = '<span class="avatar-inline">' + initial + '</span>'
+            + esc(bubbleText) + '<div class="time">' + time + '</div>';
+        c.scrollTop = c.scrollHeight;
+
+        // Safety: auto-finalize 5s after last token if 'done' never arrives
+        if (_liveTimer) clearTimeout(_liveTimer);
+        _liveTimer = setTimeout(_endStream, 5000);
+    }
+
+    // Called ONCE when full response is complete — finalize the bubble
+    function _finalizeAIMessage(finalText) {
+        // If there was no streaming (e.g. greeting), show as normal message
+        if (!_liveBubble) {
+            addMessage(finalText, 'ai');
+            return;
+        }
+        // Finalize: update with complete text and detach
+        var initial = (document.getElementById('assistantName').textContent || 'A')[0];
+        var now = new Date();
+        var time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        _liveBubble.innerHTML = '<span class="avatar-inline">' + initial + '</span>'
+            + esc(finalText.substring(_bubbleStartIdx)) + '<div class="time">' + time + '</div>';
+        _endStream();
     }
 
     var interimDiv = null;
@@ -327,7 +444,7 @@
     function showError(msg) {
         var c = document.getElementById('chatMessages');
         var d = document.createElement('div');
-        d.className = 'error-toast'; d.textContent = '⚠ ' + msg;
+        d.className = 'error-toast'; d.textContent = msg;
         c.appendChild(d); c.scrollTop = c.scrollHeight;
         setTimeout(function() { d.remove(); }, 5000);
     }
@@ -337,9 +454,9 @@
         var hdr = document.getElementById('headerStatus');
         bar.className = 'status-bar';
         if (state === 'idle') { bar.classList.remove('visible'); hdr.textContent = 'Online'; }
-        else if (state === 'listening') { bar.classList.add('visible','listening'); bar.textContent = '🎤 Listening...'; hdr.textContent = 'On call'; }
-        else if (state === 'thinking') { bar.classList.add('visible','thinking'); bar.textContent = '💭 Thinking...'; hdr.textContent = 'On call'; }
-        else if (state === 'speaking') { bar.classList.add('visible','speaking'); bar.textContent = '🔊 Speaking...'; hdr.textContent = 'On call'; }
+        else if (state === 'listening') { bar.classList.add('visible','listening'); bar.textContent = 'Listening...'; hdr.textContent = 'On call'; }
+        else if (state === 'thinking') { bar.classList.add('visible','thinking'); bar.textContent = 'Thinking...'; hdr.textContent = 'On call'; }
+        else if (state === 'speaking') { bar.classList.add('visible','speaking'); bar.textContent = 'Speaking...'; hdr.textContent = 'On call'; }
     }
 
     function esc(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }

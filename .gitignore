@@ -1,4 +1,7 @@
 .env
+phone_providers.json
+assistants_db.json
+call_log.json
 custom
 __pycache__
 

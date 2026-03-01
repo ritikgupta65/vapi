@@ -15,6 +15,17 @@
             overflow: hidden;
         }
 
+        /* ─── SVG Icon System ─── */
+        .ico {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px; flex-shrink: 0;
+        }
+        .ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .ico-sm { width: 14px; height: 14px; }
+        .ico-lg { width: 22px; height: 22px; }
+        .ico-xl { width: 28px; height: 28px; }
+        .nav-item .ico { width: 20px; height: 20px; }
+
         /* ─── Layout ─── */
         .app-layout {
             display: flex;
@@ -152,11 +163,13 @@
             left: -8px;
         }
         .nav-rail .nav-item .nav-icon {
-            font-size: 18px;
-            line-height: 1;
+            display: inline-flex; align-items: center; justify-content: center;
             flex-shrink: 0;
-            width: 24px;
-            text-align: center;
+            width: 24px; height: 24px;
+        }
+        .nav-rail .nav-item .nav-icon svg {
+            width: 20px; height: 20px;
+            fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
         }
         .nav-rail .nav-item .nav-label {
             font-size: 13px;
@@ -391,16 +404,16 @@
         .header-btn:hover { background: #374151; }
 
         .header-btn.talk-btn {
-            background: #059669;
+            background: transparent;
             border-color: #059669;
-            color: white;
+            color: #10b981;
         }
-        .header-btn.talk-btn:hover { background: #047857; }
+        .header-btn.talk-btn:hover { background: rgba(5,150,105,0.12); }
 
         .header-btn.publish-btn {
-            background: #22d3ee;
+            background: transparent;
             border-color: #22d3ee;
-            color: #0f1117;
+            color: #22d3ee;
             font-weight: 600;
             pointer-events: none;
             opacity: 0.4;
@@ -409,16 +422,16 @@
             pointer-events: auto;
             opacity: 1;
         }
-        .header-btn.publish-btn.dirty:hover { background: #06b6d4; }
+        .header-btn.publish-btn.dirty:hover { background: rgba(34,211,238,0.12); }
 
         .header-btn.published {
-            background: #065f46;
+            background: transparent;
             border-color: #10b981;
             color: #10b981;
             pointer-events: auto;
             opacity: 1;
         }
-        .header-btn.published:hover { background: #047857; }
+        .header-btn.published:hover { background: rgba(16,185,129,0.12); }
 
         .header-btn.delete-btn {
             background: transparent;
@@ -537,6 +550,11 @@
             transition: border-color 0.2s;
         }
         .form-textarea:focus { border-color: #22d3ee; }
+        .form-textarea::-webkit-scrollbar { width: 4px; }
+        .form-textarea::-webkit-scrollbar-track { background: transparent; }
+        .form-textarea::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 2px; }
+        .form-textarea::-webkit-scrollbar-thumb:hover { background: #3a3d4a; }
+        .form-textarea { scrollbar-width: thin; scrollbar-color: #2a2d3a transparent; }
 
         .save-indicator {
             position: fixed;
@@ -615,7 +633,7 @@
         }
 
         .chat-header-bar {
-            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            background: linear-gradient(135deg, #36616870, #36616870);
             padding: 14px 20px;
             display: flex;
             align-items: center;
@@ -628,7 +646,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.25);
+            background: #22d3ee;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -638,9 +656,9 @@
         .chat-header-bar .info h3 { font-size: 16px; font-weight: 600; }
         .chat-header-bar .info span { font-size: 12px; opacity: 0.85; }
         .chat-back-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
+            background: #28474c00;
+            border: 1px solid #22d3ee;
+            color: #22d3ee;
             padding: 6px 14px;
             border-radius: 16px;
             cursor: pointer;
@@ -798,7 +816,8 @@
             flex-direction: column;
             gap: 12px;
         }
-        .empty-state .icon { font-size: 48px; opacity: 0.3; }
+        .empty-state .icon { opacity: 0.3; color: #6b7280; }
+        .empty-state .icon svg { width: 48px; height: 48px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
         /* ─── Toast Notification ─── */
         .toast {
@@ -829,6 +848,131 @@
             color: #fca5a5;
             border: 1px solid #ef4444;
         }
+
+        /* ─── Call Logs Page ─── */
+        .cl-stats-row {
+            display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .cl-stat-card {
+            flex: 1; min-width: 100px;
+            background: #161821; border: 1px solid #2a2d3a; border-radius: 10px;
+            padding: 12px 16px; text-align: center;
+        }
+        .cl-stat-value { font-size: 22px; font-weight: 700; color: #e1e1e6; }
+        .cl-stat-label { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+        .cl-stat-green .cl-stat-value { color: #22c55e; }
+        .cl-stat-red .cl-stat-value { color: #ef4444; }
+        .cl-stat-cyan .cl-stat-value { color: #22d3ee; }
+
+        .cl-filters-row {
+            display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: flex-end;
+        }
+        .cl-filter { display: flex; flex-direction: column; gap: 3px; }
+        .cl-filter label { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; }
+        .cl-filter input, .cl-filter select {
+            padding: 6px 10px; background: #1f2937; border: 1px solid #2a2d3a;
+            border-radius: 6px; color: #e1e1e6; font-size: 12px; outline: none;
+            min-width: 120px;
+        }
+        .cl-filter input:focus, .cl-filter select:focus { border-color: #22d3ee; }
+
+        .cl-table { width: 100%; border-collapse: collapse; }
+        .cl-table thead { position: sticky; top: 0; z-index: 2; }
+        .cl-table th {
+            padding: 10px 16px; background: #161821; border-bottom: 1px solid #2a2d3a;
+            font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; text-align: left;
+        }
+        .cl-table td {
+            padding: 12px 16px; border-bottom: 1px solid #1e2030; font-size: 13px; color: #e1e1e6;
+        }
+        .cl-table tbody tr { cursor: pointer; transition: background 0.15s; }
+        .cl-table tbody tr:hover { background: #1f2937; }
+        .cl-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+        }
+
+        #callLogList::-webkit-scrollbar { display: none; }
+
+        .cl-detail-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99;
+        }
+        .cl-detail-overlay.open { display: block; }
+        .cl-detail-panel {
+            position: fixed; top: 0; right: -480px; width: 460px; max-width: 90vw; height: 100vh;
+            background: #161821; border-left: 1px solid #2a2d3a; z-index: 100;
+            display: flex; flex-direction: column; transition: right 0.3s ease;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.3);
+        }
+        .cl-detail-panel.open { right: 0; }
+        .cl-detail-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; border-bottom: 1px solid #2a2d3a;
+        }
+        .cl-detail-header h2 { font-size: 16px; font-weight: 600; color: #e1e1e6; }
+        .cl-detail-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 1024px) {
+            .nav-rail { width: 68px; align-items: center; }
+            .nav-rail .nav-brand,
+            .nav-rail .nav-section-label,
+            .nav-rail .nav-item .nav-label,
+            .nav-rail .nav-collapse-btn { display: none; }
+            .nav-rail .nav-item { margin: 1px 8px; padding: 12px 0; justify-content: center; gap: 0; }
+            .sidebar { width: 220px; }
+            .content-area { padding: 16px; }
+            .settings-panel { max-width: 100%; }
+            .setting-row { flex-direction: column; gap: 0; }
+        }
+        @media (max-width: 768px) {
+            .app-layout { flex-direction: column; height: auto; min-height: 100vh; }
+            .nav-rail {
+                width: 100% !important; height: auto; flex-direction: row;
+                border-right: none; border-bottom: 1px solid #1e2030;
+                padding: 4px 8px; overflow-x: auto; gap: 0;
+            }
+            .nav-rail .nav-header { display: none; }
+            .nav-rail .nav-section-label { display: none; }
+            .nav-rail .nav-spacer { display: none; }
+            .nav-rail .nav-item {
+                margin: 0; padding: 10px 12px; border-radius: 8px;
+                flex-shrink: 0; justify-content: center;
+            }
+            .nav-rail .nav-item .nav-label { display: none; }
+            .nav-rail .nav-item .nav-icon { width: auto; }
+            .nav-rail .nav-item.active::before { display: none; }
+            .page-panel { height: auto; min-height: calc(100vh - 56px); }
+            .page-panel.active { display: flex; }
+            /* Assistants page */
+            #page-assistants { flex-direction: column; }
+            #page-assistants .sidebar { width: 100%; max-height: 200px; border-right: none; border-bottom: 1px solid #2a2d3a; }
+            #page-assistants .main-area { min-height: 0; flex: 1; }
+            .main-header { flex-wrap: wrap; padding: 10px 12px; }
+            .header-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; gap: 4px; }
+            .header-btn { padding: 6px 10px; font-size: 11px; }
+            .tabs { padding: 0 8px; overflow-x: auto; }
+            .tab { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+            .content-area { padding: 12px; }
+            .chat-panel { max-width: 100%; }
+            /* Call logs */
+            .cl-stats-row { gap: 6px; }
+            .cl-stat-card { min-width: 70px; padding: 8px 10px; }
+            .cl-stat-value { font-size: 16px; }
+            .cl-filters-row { gap: 6px; }
+            .cl-filter input, .cl-filter select { min-width: 90px; font-size: 11px; }
+            .cl-table th, .cl-table td { padding: 8px 10px; font-size: 11px; }
+            .cl-detail-panel { width: 100%; max-width: 100vw; }
+            /* Outbound call */
+            #page-call .outbound-flex { flex-direction: column !important; }
+        }
+        @media (max-width: 480px) {
+            .cl-stats-row { flex-wrap: wrap; }
+            .cl-stat-card { min-width: calc(50% - 6px); }
+            .cl-filters-row { flex-direction: column; }
+            .cl-filter { width: 100%; }
+            .cl-filter input, .cl-filter select { width: 100%; min-width: 0; }
+        }
     </style>
 </head>
 <body>
@@ -838,30 +982,42 @@
     <div class="nav-rail" id="navRail">
         <div class="nav-header">
             <div class="nav-logo">AI</div>
-            <span class="nav-brand">Dashboard</span>
+            <span class="nav-brand">CallFlow AI</span>
             <button class="nav-collapse-btn" id="navCollapseBtn" title="Collapse sidebar">◀</button>
         </div>
         <div class="nav-section-label">Main</div>
         <div class="nav-item active" data-nav="assistants">
-            <span class="nav-icon">🤖</span>
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="17" r="4"/></svg></span>
             <span class="nav-label">Assistants</span>
         </div>
         <div class="nav-item" data-nav="call">
-            <span class="nav-icon">📱</span>
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="15" y1="2" x2="22" y2="2"/><line x1="18.5" y1="2" x2="18.5" y2="8"/><line x1="15" y1="5" x2="22" y2="5"/></svg></span>
             <span class="nav-label">Outbound Call</span>
         </div>
         <div class="nav-item" data-nav="phone">
-            <span class="nav-icon">📞</span>
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
             <span class="nav-label">Phone Numbers</span>
         </div>
         <div class="nav-item" data-nav="history">
-            <span class="nav-icon">📋</span>
-            <span class="nav-label">History</span>
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+            <span class="nav-label">Call Logs</span>
+        </div>
+        <div class="nav-item" data-nav="voicelibrary">
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="2" height="20" rx="1"/><rect x="5" y="6" width="2" height="12" rx="1"/><rect x="13" y="4" width="2" height="16" rx="1"/><rect x="1" y="9" width="2" height="6" rx="1"/><rect x="17" y="7" width="2" height="10" rx="1"/><rect x="21" y="10" width="2" height="4" rx="1"/></svg></span>
+            <span class="nav-label">Voice Library</span>
+        </div>
+        <div class="nav-item" data-nav="apikeys">
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+            <span class="nav-label">API Keys</span>
+        </div>
+        <div class="nav-item" data-nav="integration">
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2l-2 7h-7l5.5 4.5-2 7 5.5-4 5.5 4-2-7L21 9h-7z" fill="none"/><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+            <span class="nav-label">Integrations</span>
         </div>
         <div class="nav-spacer"></div>
         <div class="nav-section-label">Account</div>
         <div class="nav-item" data-nav="settings">
-            <span class="nav-icon">⚙️</span>
+            <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
             <span class="nav-label">Settings</span>
         </div>
     </div>
@@ -871,13 +1027,13 @@
     <!-- ─── Sidebar ─── -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>🤖 Assistants</h2>
+            <h2><span class="ico" style="vertical-align:middle; margin-right:6px;"><svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="17" r="4"/></svg></span>Assistants</h2>
         </div>
         <button class="create-btn" id="createAssistantBtn">
             <span class="icon">＋</span> Create Assistant
         </button>
         <div class="search-box">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"><svg style="width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
             <input type="text" id="searchInput" placeholder="Search Assistants" />
         </div>
         <div class="assistant-list" id="assistantList">
@@ -889,7 +1045,7 @@
     <div class="main-area" id="mainArea">
         <!-- Empty state (shown when no assistant selected) -->
         <div class="empty-state" id="emptyState">
-            <div class="icon">🤖</div>
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="17" r="4"/></svg></div>
             <div>Select an assistant or create a new one</div>
         </div>
 
@@ -900,17 +1056,17 @@
                 <h1 id="detailName">Assistant Name</h1>
                 <span class="assistant-id" id="detailId" title="Click to copy">ID: ---</span>
                 <div class="header-actions">
-                    <button class="header-btn delete-btn" id="deleteBtn">🗑 Delete</button>
-                    <button class="header-btn talk-btn" id="talkBtn">📞 Talk to Assistant</button>
+                    <button class="header-btn delete-btn" id="deleteBtn"><span class="ico ico-sm"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> Delete</button>
+                    <button class="header-btn talk-btn" id="talkBtn"><span class="ico ico-sm"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span> Talk to Assistant</button>
                     <button class="header-btn publish-btn" id="publishBtn">Publish</button>
                 </div>
             </div>
 
             <!-- Tabs -->
             <div class="tabs" id="tabsBar">
-                <div class="tab active" data-tab="model"><span class="tab-icon">🧠</span> Model</div>
-                <div class="tab" data-tab="voice"><span class="tab-icon">🎙</span> Voice</div>
-                <div class="tab" data-tab="advanced"><span class="tab-icon">⚙️</span> Advanced</div>
+                <div class="tab active" data-tab="model"><span class="tab-icon"><span class="ico ico-sm"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span></span> Model</div>
+                <div class="tab" data-tab="voice"><span class="tab-icon"><span class="ico ico-sm"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span></span> Voice</div>
+                <div class="tab" data-tab="advanced"><span class="tab-icon"><span class="ico ico-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span></span> Advanced</div>
             </div>
 
             <!-- Content (settings or chat) -->
@@ -918,13 +1074,13 @@
                 <!-- Settings panel -->
                 <div class="settings-panel" id="settingsPanel">
                     <!-- Published URL Banner -->
-                    <div class="publish-banner" id="publishBanner">
-                        <div class="title">✅ Published — Use this URL to embed this assistant</div>
+                    <!-- <div class="publish-banner" id="publishBanner"> -->
+                        <!-- <div class="title"><span class="ico ico-sm" style="color:#10b981; vertical-align:middle; margin-right:4px;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span> Published — Use this URL to embed this assistant</div>
                         <div class="url-row">
                             <div class="url-text" id="publishUrl"></div>
                             <button class="copy-btn" id="copyUrlBtn">Copy</button>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Model Tab Content -->
                     <div class="tab-content" id="tab-model">
@@ -985,8 +1141,10 @@
                     <div class="tab-content" id="tab-voice" style="display:none;">
                         <div class="setting-group">
                             <label>STT Provider</label>
-                            <select class="form-select" disabled>
-                                <option>Deepgram</option>
+                            <div class="hint"><span class="info-icon">i</span> Speech-to-Text provider for transcribing user speech</div>
+                            <select class="form-select" id="fieldSTTProvider" onchange="onSTTProviderChange()">
+                                <option value="deepgram">Deepgram</option>
+                                <option value="sarvam">Sarvam AI</option>
                             </select>
                         </div>
 
@@ -995,20 +1153,15 @@
                             <div class="hint"><span class="info-icon">i</span> Speech-to-Text model for transcribing user speech</div>
                             <select class="form-select" id="fieldSTT">
                                 <option value="nova-2">Nova-2 (Best quality)</option>
-                                <option value="nova-2-general">Nova-2 General</option>
-                                <option value="nova-2-meeting">Nova-2 Meeting</option>
-                                <option value="nova-2-phonecall">Nova-2 Phone Call</option>
-                                <option value="nova-2-conversationalai">Nova-2 Conversational AI</option>
-                                <option value="nova">Nova</option>
-                                <option value="enhanced">Enhanced</option>
-                                <option value="base">Base</option>
                             </select>
                         </div>
 
                         <div class="setting-group">
                             <label>TTS Provider</label>
-                            <select class="form-select" disabled>
-                                <option>Deepgram</option>
+                            <div class="hint"><span class="info-icon">i</span> Text-to-Speech provider for the assistant's voice</div>
+                            <select class="form-select" id="fieldTTSProvider" onchange="onTTSProviderChange()">
+                                <option value="deepgram">Deepgram</option>
+                                <option value="sarvam">Sarvam AI</option>
                             </select>
                         </div>
 
@@ -1017,17 +1170,6 @@
                             <div class="hint"><span class="info-icon">i</span> Text-to-Speech voice model for the assistant's voice</div>
                             <select class="form-select" id="fieldTTS">
                                 <option value="aura-asteria-en">Asteria (Female, US English)</option>
-                                <option value="aura-luna-en">Luna (Female, US English)</option>
-                                <option value="aura-stella-en">Stella (Female, US English)</option>
-                                <option value="aura-athena-en">Athena (Female, UK English)</option>
-                                <option value="aura-hera-en">Hera (Female, US English)</option>
-                                <option value="aura-orion-en">Orion (Male, US English)</option>
-                                <option value="aura-arcas-en">Arcas (Male, US English)</option>
-                                <option value="aura-perseus-en">Perseus (Male, US English)</option>
-                                <option value="aura-angus-en">Angus (Male, Irish English)</option>
-                                <option value="aura-orpheus-en">Orpheus (Male, US English)</option>
-                                <option value="aura-helios-en">Helios (Male, UK English)</option>
-                                <option value="aura-zeus-en">Zeus (Male, US English)</option>
                             </select>
                         </div>
                     </div>
@@ -1059,12 +1201,15 @@
                 <!-- Chat panel (Talk to Assistant) -->
                 <div class="chat-panel" id="chatPanel">
                     <div class="chat-header-bar">
-                        <div class="avatar" id="chatAvatar">🤖</div>
+                        <div class="avatar" id="chatAvatar"><svg style="width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><circle cx="12" cy="17" r="4"/></svg></div>
                         <div class="info">
                             <h3 id="chatNameLabel">Assistant</h3>
                             <span id="chatHeaderStatus">Online</span>
                         </div>
-                        <button class="chat-back-btn" id="chatBackBtn">← Back to Settings</button>
+                        <div style="display:flex; gap:8px; margin-left:auto;">
+                            <button class="chat-back-btn" id="chatNewChatBtn" style="background:#28474c00; color:#22d3ee;"><span class="ico ico-sm" style="margin-right:3px;"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span> New Chat</button>
+                            <button class="chat-back-btn" id="chatBackBtn"><span class="ico ico-sm" style="margin-right:3px;"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Back to Settings</button>
+                        </div>
                     </div>
                     <div class="chat-status-bar" id="chatStatusBar"></div>
                     <div class="chat-messages" id="chatMessages"></div>
@@ -1088,14 +1233,14 @@
         <div style="flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden;">
             <!-- Header -->
             <div style="padding:20px 32px 0; border-bottom:1px solid #2a2d3a;">
-                <h1 style="font-size:22px; font-weight:700; color:#e1e1e6; margin-bottom:4px;">📱 Outbound Calls</h1>
+                <h1 style="font-size:22px; font-weight:700; color:#e1e1e6; margin-bottom:4px;"><span class="ico" style="vertical-align:middle; margin-right:6px;"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="15" y1="2" x2="22" y2="2"/><line x1="18.5" y1="2" x2="18.5" y2="8"/><line x1="15" y1="5" x2="22" y2="5"/></svg></span>Outbound Calls</h1>
                 <!-- <p style="font-size:13px; color:#6b7280; margin-bottom:16px;">Call any phone number using your own AI Voice Agent (Deepgram STT → OpenAI → Deepgram TTS) via Twilio</p> -->
             </div>
 
-            <div style="flex:1; overflow-y:auto; padding:24px 32px; display:flex; gap:24px; flex-wrap:wrap; align-content:flex-start;">
+            <div class="outbound-flex" style="flex:1; overflow-y:auto; padding:24px 32px; display:flex; gap:24px; align-content:flex-start;">
 
                 <!-- Left: Call Form -->
-                <div style="flex:1; min-width:380px; max-width:560px;">
+                <div style="flex:1; min-width:0;">
                     <!-- Public URL (ngrok) banner -->
                     <!-- <div id="publicUrlBanner" style="background:#1c1507; border:1px solid #854d0e; border-radius:10px; padding:14px 18px; margin-bottom:16px;">
                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
@@ -1114,7 +1259,7 @@
                     </div> -->
 
                     <div style="background:#161821; border:1px solid #2a2d3a; border-radius:14px; padding:24px;">
-                        <h2 style="font-size:16px; font-weight:600; color:#e1e1e6; margin-bottom:4px;">🚀 Make a Call</h2>
+                        <h2 style="font-size:16px; font-weight:600; color:#e1e1e6; margin-bottom:4px;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:4px;"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span> Make a Call</h2>
                         <p style="font-size:12px; color:#4b5563; margin-bottom:18px;">Your voice agent will answer and talk to the person on the phone in real-time</p>
 
                         <!-- Phone Number -->
@@ -1159,8 +1304,8 @@
                         </div>
 
                         <!-- Call button -->
-                        <button id="makeCallBtn" onclick="makeOutboundCall()" style="width:100%; padding:14px; background:linear-gradient(135deg,#22d3ee,#0891b2); border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; transition:all .2s; margin-top:8px;">
-                            📞 Call with AI Voice Agent
+                        <button id="makeCallBtn" onclick="makeOutboundCall()" style="width:100%; padding:14px; background:transparent; border:1px solid #22d3ee; border-radius:10px; color:#22d3ee; font-size:15px; font-weight:700; cursor:pointer; transition:all .2s; margin-top:8px;">
+                            <span class="ico ico-sm" style="vertical-align:middle; margin-right:4px;"><svg viewBox="0 0 24 24" style="stroke:#22d3ee;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span> Call with AI Voice Agent
                         </button>
 
                         <!-- Call result -->
@@ -1202,19 +1347,20 @@
                             <div>5️⃣ Deepgram converts the response to speech (TTS)</div>
                             <div>6️⃣ Audio is streamed back to the phone call in real-time</div>
                         </div>
-                    </div>
-                </div> -->
+                    </div> -->
+
+                </div>
 
                 <!-- Right: Call History -->
-                <div style="flex:1; min-width:320px; max-width:520px;">
+                <div style="flex:1; min-width:0;">
                     <div style="background:#161821; border:1px solid #2a2d3a; border-radius:14px; padding:24px; max-height:calc(100vh - 160px); display:flex; flex-direction:column;">
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-                            <h2 style="font-size:16px; font-weight:600; color:#e1e1e6;">📋 Recent Calls</h2>
+                            <h2 style="font-size:16px; font-weight:600; color:#e1e1e6;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:4px;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Recent Calls</h2>
                             <button onclick="loadCallLog()" style="padding:6px 12px; background:#1f2937; border:1px solid #2a2d3a; border-radius:6px; color:#9ca3af; cursor:pointer; font-size:12px;">Refresh</button>
                         </div>
-                        <div id="callLogList" style="flex:1; overflow-y:auto;">
+                        <div id="callLogList" style="flex:1; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none;">
                             <div style="text-align:center; color:#4b5563; padding:40px 0; font-size:13px;">
-                                <div style="font-size:36px; opacity:0.3; margin-bottom:12px;">📞</div>
+                                <div style="opacity:0.3; margin-bottom:12px;"><svg style="width:36px; height:36px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
                                 No calls yet. Make your first outbound call!
                             </div>
                         </div>
@@ -1227,37 +1373,248 @@
 
     <!-- ─── Page: Phone Numbers ─── -->
     <div class="page-panel" id="page-phone">
-        <div class="placeholder-page">
-            <div class="ph-icon">📞</div>
-            <div class="ph-title">Phone Numbers</div>
-            <div class="ph-desc">Connect phone numbers to your AI assistants for inbound and outbound calling. Configure SIP trunks, buy numbers, and manage routing.</div>
-            <div class="ph-badge">Coming Soon</div>
+        <div style="flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden;">
+            <div style="padding:20px 32px 0; border-bottom:1px solid #2a2d3a;">
+                <h1 style="font-size:22px; font-weight:700; color:#e1e1e6; margin-bottom:4px;"><span class="ico" style="vertical-align:middle; margin-right:6px;"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>Phone Numbers</h1>
+                <p style="font-size:13px; color:#6b7280; margin-bottom:16px;">Connect your telephony providers and manage phone numbers</p>
+            </div>
+
+            <div style="flex:1; overflow-y:auto; padding:24px 32px; scrollbar-width:none; -ms-overflow-style:none;">
+                <div class="outbound-flex" style="display:flex; gap:24px; align-items:flex-start;">
+
+                    <!-- ── Twilio Integration ── -->
+                    <div style="flex:1; min-width:0;">
+                        <div style="background:#161821; border:1px solid #2a2d3a; border-radius:14px; padding:24px; margin-bottom:20px;">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+                                <div style="width:44px; height:44px; background:#1a1520; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                                    <svg style="width:24px; height:24px; fill:none; stroke:#ef4444; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                </div>
+                                <div>
+                                    <h2 style="font-size:16px; font-weight:600; color:#e1e1e6; margin:0;">Twilio</h2>
+                                    <p style="font-size:11px; color:#6b7280; margin:0;">Voice, SMS &amp; Phone Numbers</p>
+                                </div>
+                                <span id="twilioConnBadge" style="margin-left:auto; font-size:10px; font-weight:700; padding:3px 10px; border-radius:5px; background:#450a0a; color:#ef4444;">NOT CONNECTED</span>
+                            </div>
+
+                            <div id="twilioCredForm">
+                                <div style="margin-bottom:14px;">
+                                    <label style="display:block; font-size:11px; font-weight:600; color:#9ca3af; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px;">Account SID</label>
+                                    <input type="text" id="twilioSidInput" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="width:100%; padding:9px 12px; background:#1f2937; border:1px solid #2a2d3a; border-radius:8px; color:#e1e1e6; font-size:13px; outline:none; font-family:monospace;" />
+                                </div>
+                                <div style="margin-bottom:14px;">
+                                    <label style="display:block; font-size:11px; font-weight:600; color:#9ca3af; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px;">Auth Token</label>
+                                    <input type="password" id="twilioTokenInput" placeholder="••••••••••••••••••••••••••••" style="width:100%; padding:9px 12px; background:#1f2937; border:1px solid #2a2d3a; border-radius:8px; color:#e1e1e6; font-size:13px; outline:none; font-family:monospace;" />
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <button onclick="connectProvider('twilio')" id="twilioConnBtn" style="flex:1; padding:10px; background:transparent; border:1px solid #ef4444; border-radius:8px; color:#ef4444; font-size:13px; font-weight:600; cursor:pointer;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:3px;"><svg viewBox="0 0 24 24" style="stroke:#ef4444;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span> Connect Twilio</button>
+                                    <button onclick="disconnectProvider('twilio')" id="twilioDiscBtn" style="padding:10px 14px; background:#1f2937; border:1px solid #2a2d3a; border-radius:8px; color:#9ca3af; font-size:13px; cursor:pointer; display:none;">Disconnect</button>
+                                </div>
+                            </div>
+                            <div id="twilioStatus" style="margin-top:12px; font-size:12px; display:none; padding:10px 14px; border-radius:8px;"></div>
+                        </div>
+
+                        <!-- Twilio Numbers List -->
+                        <div id="twilioNumbersPanel" style="background:#161821; border:1px solid #2a2d3a; border-radius:14px; padding:24px; display:none;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                                <h3 style="font-size:14px; font-weight:600; color:#e1e1e6;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:4px;"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span> Twilio Phone Numbers</h3>
+                                <button onclick="refreshNumbers('twilio')" style="padding:5px 10px; background:transparent; border:1px solid #2a2d3a; border-radius:6px; color:#9ca3af; cursor:pointer; font-size:11px;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:2px;"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg></span> Refresh</button>
+                            </div>
+                            <div id="twilioNumbersList" style="font-size:13px; color:#6b7280;">Loading...</div>
+                        </div>
+                    </div>
+
+                    <!-- ── Vobiz Integration ── -->
+                    <div style="flex:1; min-width:0;">
+                        <div style="background:#161821; border:1px solid #2a2d3a; border-radius:14px; padding:24px; margin-bottom:20px;">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+                                <div style="width:44px; height:44px; background:#0c1a2a; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                                    <svg style="width:24px; height:24px; fill:none; stroke:#22c55e; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                </div>
+                                <div>
+                                    <h2 style="font-size:16px; font-weight:600; color:#e1e1e6; margin:0;">Vobiz</h2>
+                                    <p style="font-size:11px; color:#6b7280; margin:0;">Voice AI Infrastructure — <a href="https://vobiz.ai" target="_blank" style="color:#22d3ee; text-decoration:none;">vobiz.ai</a></p>
+                                </div>
+                                <span id="vobizConnBadge" style="margin-left:auto; font-size:10px; font-weight:700; padding:3px 10px; border-radius:5px; background:#450a0a; color:#ef4444;">NOT CONNECTED</span>
+                            </div>
+
+                            <div id="vobizCredForm">
+                                <div style="margin-bottom:14px;">
+                                    <label style="display:block; font-size:11px; font-weight:600; color:#9ca3af; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px;">Auth ID</label>
+                                    <input type="text" id="vobizAuthIdInput" placeholder="VOBIZ_ABC123XY..." style="width:100%; padding:9px 12px; background:#1f2937; border:1px solid #2a2d3a; border-radius:8px; color:#e1e1e6; font-size:13px; outline:none; font-family:monospace;" />
+                                </div>
+                                <div style="margin-bottom:14px;">
+                                    <label style="display:block; font-size:11px; font-weight:600; color:#9ca3af; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px;">Auth Token</label>
+                                    <input type="password" id="vobizTokenInput" placeholder="••••••••••••••••••••••••••••" style="width:100%; padding:9px 12px; background:#1f2937; border:1px solid #2a2d3a; border-radius:8px; color:#e1e1e6; font-size:13px; outline:none; font-family:monospace;" />
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <button onclick="connectProvider('vobiz')" id="vobizConnBtn" style="flex:1; padding:10px; background:transparent; border:1px solid #22c55e; border-radius:8px; color:#22c55e; font-size:13px; font-weight:600; cursor:pointer;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:3px;"><svg viewBox="0 0 24 24" style="stroke:#22c55e;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span> Connect Vobiz</button>
+                                    <button onclick="disconnectProvider('vobiz')" id="vobizDiscBtn" style="padding:10px 14px; background:#1f2937; border:1px solid #2a2d3a; border-radius:8px; color:#9ca3af; font-size:13px; cursor:pointer; display:none;">Disconnect</button>
+                                </div>
+                            </div>
+                            <div id="vobizStatus" style="margin-top:12px; font-size:12px; display:none; padding:10px 14px; border-radius:8px;"></div>
+                        </div>
+
+                        <!-- Vobiz Numbers List -->
+                        <div id="vobizNumbersPanel" style="background:#161821; border:1px solid #2a2d3a; border-radius:14px; padding:24px; display:none;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                                <h3 style="font-size:14px; font-weight:600; color:#e1e1e6;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:4px;"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span> Vobiz Phone Numbers</h3>
+                                <button onclick="refreshNumbers('vobiz')" style="padding:5px 10px; background:transparent; border:1px solid #2a2d3a; border-radius:6px; color:#9ca3af; cursor:pointer; font-size:11px;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:2px;"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg></span> Refresh</button>
+                            </div>
+                            <div id="vobizNumbersList" style="font-size:13px; color:#6b7280;">Loading...</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- ─── Page: History ─── -->
+    <!-- ─── Page: Call Logs ─── -->
     <div class="page-panel" id="page-history">
-        <div class="placeholder-page">
-            <div class="ph-icon">📋</div>
-            <div class="ph-title">Call History</div>
-            <div class="ph-desc">View transcripts, recordings, and analytics from all past conversations with your AI assistants.</div>
-            <div class="ph-badge">Coming Soon</div>
+        <div style="flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden;">
+            <!-- Header -->
+            <div style="padding:16px 24px 0; border-bottom:1px solid #2a2d3a;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                    <h1 style="font-size:20px; font-weight:700; color:#e1e1e6; margin:0;"><span class="ico" style="vertical-align:middle; margin-right:6px;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>Call Logs</h1>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="migrateLogsToSupabase()" id="migrateBtn" style="padding:6px 14px; background:transparent; border:1px solid #2a4a7f; border-radius:8px; color:#60a5fa; cursor:pointer; font-size:12px; font-weight:500;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:3px;"><svg viewBox="0 0 24 24" style="stroke:#60a5fa;"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="18" x2="12" y2="6"/></svg></span> Migrate Local → Supabase</button>
+                        <button onclick="loadCallLogs()" style="padding:6px 14px; background:transparent; border:1px solid #2a2d3a; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:12px; font-weight:500;"><span class="ico ico-sm" style="vertical-align:middle; margin-right:2px;"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg></span> Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="cl-stats-row" id="clStatsRow">
+                    <div class="cl-stat-card">
+                        <div class="cl-stat-value" id="statTotal">0</div>
+                        <div class="cl-stat-label">Total Calls</div>
+                    </div>
+                    <div class="cl-stat-card cl-stat-green">
+                        <div class="cl-stat-value" id="statAnswered">0</div>
+                        <div class="cl-stat-label">Answered</div>
+                    </div>
+                    <div class="cl-stat-card cl-stat-red">
+                        <div class="cl-stat-value" id="statUnanswered">0</div>
+                        <div class="cl-stat-label">Unanswered</div>
+                    </div>
+                    <div class="cl-stat-card cl-stat-cyan">
+                        <div class="cl-stat-value" id="statDuration">0m</div>
+                        <div class="cl-stat-label">Total Duration</div>
+                    </div>
+                </div>
+
+                <!-- Filters Row -->
+                <div class="cl-filters-row">
+                    <div class="cl-filter">
+                        <label>Date</label>
+                        <input type="date" id="clFilterDate" onchange="applyCallLogFilters()" />
+                    </div>
+                    <div class="cl-filter">
+                        <label>Assistant</label>
+                        <select id="clFilterAssistant" onchange="applyCallLogFilters()">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div class="cl-filter">
+                        <label>Phone</label>
+                        <input type="text" id="clFilterPhone" placeholder="Search number..." oninput="applyCallLogFilters()" />
+                    </div>
+                    <div class="cl-filter">
+                        <label>Type</label>
+                        <select id="clFilterType" onchange="applyCallLogFilters()">
+                            <option value="">All</option>
+                            <option value="outbound">Outbound</option>
+                            <option value="chat">Chat</option>
+                        </select>
+                    </div>
+                    <div class="cl-filter">
+                        <label>Status</label>
+                        <select id="clFilterStatus" onchange="applyCallLogFilters()">
+                            <option value="">All</option>
+                            <option value="completed">Completed</option>
+                            <option value="busy">Busy</option>
+                            <option value="no-answer">No Answer</option>
+                            <option value="failed">Failed</option>
+                            <option value="queued">Queued</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call Log Table -->
+            <div style="flex:1; overflow-y:auto; padding:0;" id="clTableWrap">
+                <table class="cl-table" id="clTable">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Customer</th>
+                            <th>Phone Number</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                            <th>Date</th>
+                            <th>Transcript</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clTableBody">
+                        <tr><td colspan="7" style="text-align:center; padding:40px; color:#4b5563;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Detail slide-over -->
+        <div class="cl-detail-overlay" id="clDetailOverlay" onclick="closeCallLogDetail()"></div>
+        <div class="cl-detail-panel" id="clDetailPanel">
+            <div class="cl-detail-header">
+                <h2 id="clDetailTitle">Call Details</h2>
+                <button onclick="closeCallLogDetail()" style="background:none; border:none; color:#9ca3af; font-size:20px; cursor:pointer;">✕</button>
+            </div>
+            <div class="cl-detail-body" id="clDetailBody"></div>
         </div>
     </div>
 
     <!-- ─── Page: Settings ─── -->
     <div class="page-panel" id="page-settings">
         <div class="placeholder-page">
-            <div class="ph-icon">⚙️</div>
+            <div class="ph-icon"><svg style="width:48px; height:48px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
             <div class="ph-title">Settings</div>
             <div class="ph-desc">Manage API keys, billing, team members, webhooks, and other account-level configuration.</div>
+            <div class="ph-badge">Coming Soon</div>
+        </div>
+    </div>
+
+    <!-- ─── Page: Voice Library ─── -->
+    <div class="page-panel" id="page-voicelibrary">
+        <div class="placeholder-page">
+            <div class="ph-icon"><svg style="width:48px; height:48px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="9" y="2" width="2" height="20" rx="1"/><rect x="5" y="6" width="2" height="12" rx="1"/><rect x="13" y="4" width="2" height="16" rx="1"/><rect x="1" y="9" width="2" height="6" rx="1"/><rect x="17" y="7" width="2" height="10" rx="1"/><rect x="21" y="10" width="2" height="4" rx="1"/></svg></div>
+            <div class="ph-title">Voice Library</div>
+            <div class="ph-desc">Browse, preview, and manage custom voices. Clone voices, adjust speaking styles, and assign them to your assistants.</div>
+            <div class="ph-badge">Coming Soon</div>
+        </div>
+    </div>
+
+    <!-- ─── Page: API Keys ─── -->
+    <div class="page-panel" id="page-apikeys">
+        <div class="placeholder-page">
+            <div class="ph-icon"><svg style="width:48px; height:48px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="ph-title">API Keys</div>
+            <div class="ph-desc">Generate and manage API keys for programmatic access. Control permissions, set rate limits, and track usage.</div>
+            <div class="ph-badge">Coming Soon</div>
+        </div>
+    </div>
+
+    <!-- ─── Page: Integrations ─── -->
+    <div class="page-panel" id="page-integration">
+        <div class="placeholder-page">
+            <div class="ph-icon"><svg style="width:48px; height:48px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+            <div class="ph-title">Integrations</div>
+            <div class="ph-desc">Connect with third-party services like CRMs, helpdesks, calendars, and messaging platforms to extend your assistant's capabilities.</div>
             <div class="ph-badge">Coming Soon</div>
         </div>
     </div>
 </div>
 
 <!-- Save indicator -->
-<div class="save-indicator" id="saveIndicator">✓ Settings saved</div>
+<div class="save-indicator" id="saveIndicator"><span class="ico ico-sm" style="vertical-align:middle; margin-right:3px;"><svg viewBox="0 0 24 24" style="stroke:#10b981;"><polyline points="20 6 9 17 4 12"/></svg></span> Settings saved</div>
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1337,7 +1694,7 @@ function renderAssistantList(filter) {
             <div class="meta">
                 <span class="provider-tag">deepgram</span> · 
                 <span class="provider-tag">openai</span> ·
-                <span class="provider-tag">${a.published ? '✅ published' : 'draft'}</span>
+                <span class="provider-tag">${a.published ? 'published' : 'draft'}</span>
             </div>
         </div>
     `).join('');
@@ -1371,14 +1728,20 @@ function selectAssistant(id) {
     document.getElementById('fieldModel').value = a.openai_model || 'gpt-4o-mini';
     document.getElementById('fieldFirstMessage').value = a.first_message || '';
     document.getElementById('fieldSystemPrompt').value = a.system_prompt || '';
-    document.getElementById('fieldSTT').value = a.stt_model || 'nova-2';
-    document.getElementById('fieldTTS').value = a.tts_model || 'aura-asteria-en';
     document.getElementById('fieldTemperature').value = a.temperature != null ? a.temperature : 0.7;
     document.getElementById('fieldMaxTokens').value = a.max_tokens != null ? a.max_tokens : 200;
     document.getElementById('fieldName').value = a.name || '';
     document.getElementById('fieldIdDisplay').value = a.id;
     document.getElementById('fieldCreated').value = a.created_at ? new Date(a.created_at).toLocaleString() : '';
     document.getElementById('fieldUpdated').value = a.updated_at ? new Date(a.updated_at).toLocaleString() : '';
+
+    // Set provider dropdowns and load corresponding models
+    const sttProvider = a.stt_provider || 'deepgram';
+    const ttsProvider = a.tts_provider || 'deepgram';
+    document.getElementById('fieldSTTProvider').value = sttProvider;
+    document.getElementById('fieldTTSProvider').value = ttsProvider;
+    populateModelDropdown('fieldSTT', sttProvider, 'stt', a.stt_model || 'nova-2');
+    populateModelDropdown('fieldTTS', ttsProvider, 'tts', a.tts_model || 'aura-asteria-en');
 
     // Publish button state
     updatePublishButton(a);
@@ -1408,7 +1771,7 @@ function showEmpty() {
 function updatePublishButton(a) {
     const btn = document.getElementById('publishBtn');
     if (a.published) {
-        btn.textContent = '✅ Published';
+        btn.textContent = 'Published';
         btn.classList.add('published');
         btn.classList.remove('publish-btn');
     } else {
@@ -1436,6 +1799,14 @@ function bindEvents() {
                 loadCallConfig();
                 loadCallLog();
             }
+            // Load call logs when navigating to history page
+            if (page === 'history') {
+                loadCallLogs();
+            }
+            // Load phone page when navigating to it
+            if (page === 'phone') {
+                loadPhonePage();
+            }
         };
     });
 
@@ -1460,7 +1831,7 @@ function bindEvents() {
     });
 
     // Mark dirty on change (no auto-save — save happens on Publish click)
-    const editableFields = ['fieldModel', 'fieldFirstMessage', 'fieldSystemPrompt', 'fieldSTT', 'fieldTTS', 'fieldName', 'fieldTemperature', 'fieldMaxTokens'];
+    const editableFields = ['fieldModel', 'fieldFirstMessage', 'fieldSystemPrompt', 'fieldSTT', 'fieldTTS', 'fieldName', 'fieldTemperature', 'fieldMaxTokens', 'fieldSTTProvider', 'fieldTTSProvider'];
     editableFields.forEach(id => {
         const el = document.getElementById(id);
         el.addEventListener('input', () => { markDirty(); });
@@ -1493,6 +1864,25 @@ function bindEvents() {
 
     // Chat back button
     document.getElementById('chatBackBtn').onclick = exitChatMode;
+
+    // New Chat button
+    document.getElementById('chatNewChatBtn').onclick = newChat;
+}
+
+function newChat() {
+    if (!selectedId) return;
+    // Destroy current voice instance
+    if (voiceInstance) {
+        voiceInstance.destroy();
+        voiceInstance = null;
+    }
+    // Clear chat messages
+    document.getElementById('chatMessages').innerHTML = '';
+    document.getElementById('chatCallBtn').classList.remove('call-active');
+    // Re-enter chat mode (creates fresh VoiceSDK instance)
+    isChatMode = false;
+    enterChatMode();
+    showToast('New chat started!', 'success');
 }
 
 // ═══════════════════════════════════════════════
@@ -1520,7 +1910,9 @@ async function saveAssistant() {
         openai_model: document.getElementById('fieldModel').value,
         first_message: document.getElementById('fieldFirstMessage').value,
         system_prompt: document.getElementById('fieldSystemPrompt').value,
+        stt_provider: document.getElementById('fieldSTTProvider').value,
         stt_model: document.getElementById('fieldSTT').value,
+        tts_provider: document.getElementById('fieldTTSProvider').value,
         tts_model: document.getElementById('fieldTTS').value,
         temperature: parseFloat(document.getElementById('fieldTemperature').value) || 0.7,
         max_tokens: parseInt(document.getElementById('fieldMaxTokens').value) || 200,
@@ -1590,14 +1982,65 @@ function switchTab(tab) {
 }
 
 // ═══════════════════════════════════════════════
+// PROVIDER MODEL LOADING
+// ═══════════════════════════════════════════════
+let providerModelsCache = {};
+
+async function fetchProviderModels(provider, type) {
+    const key = provider + '_' + type;
+    if (providerModelsCache[key]) return providerModelsCache[key];
+    try {
+        const data = await apiGet('/api/provider-models?provider=' + encodeURIComponent(provider) + '&type=' + encodeURIComponent(type));
+        providerModelsCache[key] = data.models || [];
+        return providerModelsCache[key];
+    } catch (e) {
+        console.error('Failed to fetch models for', provider, type, e);
+        return [];
+    }
+}
+
+async function populateModelDropdown(selectId, provider, type, currentValue) {
+    const models = await fetchProviderModels(provider, type);
+    const sel = document.getElementById(selectId);
+    sel.innerHTML = '';
+    models.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.value;
+        opt.textContent = m.label;
+        sel.appendChild(opt);
+    });
+    if (currentValue && models.some(m => m.value === currentValue)) {
+        sel.value = currentValue;
+    } else if (models.length > 0) {
+        sel.value = models[0].value;
+    }
+    markDirty();
+}
+
+async function onSTTProviderChange() {
+    const provider = document.getElementById('fieldSTTProvider').value;
+    await populateModelDropdown('fieldSTT', provider, 'stt', null);
+}
+
+async function onTTSProviderChange() {
+    const provider = document.getElementById('fieldTTSProvider').value;
+    await populateModelDropdown('fieldTTS', provider, 'tts', null);
+}
+
+// ═══════════════════════════════════════════════
 // CHAT MODE (Talk to Assistant)
 // ═══════════════════════════════════════════════
+let chatConversation = [];
+let chatStartedAt = null;
+
 function enterChatMode() {
     if (!selectedId) return;
     const a = assistants.find(x => x.id === selectedId);
     if (!a) return;
 
     isChatMode = true;
+    chatConversation = [];
+    chatStartedAt = new Date().toISOString();
     document.getElementById('settingsPanel').style.display = 'none';
     document.getElementById('chatPanel').classList.add('visible');
     document.getElementById('tabsBar').style.display = 'none';
@@ -1605,7 +2048,7 @@ function enterChatMode() {
     document.getElementById('chatMessages').innerHTML = '';
 
     // Update talk button
-    document.getElementById('talkBtn').textContent = '← Settings';
+    document.getElementById('talkBtn').textContent = 'Settings';
     document.getElementById('talkBtn').onclick = exitChatMode;
 
     // Create VoiceSDK instance
@@ -1639,6 +2082,26 @@ function enterChatMode() {
 }
 
 function exitChatMode() {
+    // Log chat session to Supabase
+    if (chatConversation.length > 0 && selectedId) {
+        const a = assistants.find(x => x.id === selectedId);
+        const durationSec = chatStartedAt ? Math.round((Date.now() - new Date(chatStartedAt).getTime()) / 1000) : 0;
+        fetch(API + '/api/chat-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                session_id: 'chat_' + Date.now(),
+                assistant_id: selectedId,
+                customer_name: a ? a.name : 'Chat Session',
+                duration: durationSec,
+                conversation: chatConversation,
+                started_at: chatStartedAt
+            })
+        }).catch(e => console.warn('Failed to log chat session', e));
+    }
+    chatConversation = [];
+    chatStartedAt = null;
+
     isChatMode = false;
     if (voiceInstance) {
         voiceInstance.destroy();
@@ -1649,7 +2112,7 @@ function exitChatMode() {
     document.getElementById('tabsBar').style.display = 'flex';
 
     // Restore talk button
-    document.getElementById('talkBtn').textContent = '📞 Talk to Assistant';
+    document.getElementById('talkBtn').innerHTML = '<span class="ico ico-sm" style="vertical-align:middle; margin-right:3px;"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span> Talk to Assistant';
     document.getElementById('talkBtn').onclick = enterChatMode;
 
     // Reset call button
@@ -1679,6 +2142,8 @@ function chatAddMsg(text, type) {
     }
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
+    // Track conversation for logging
+    chatConversation.push({ role: type === 'user' ? 'user' : 'assistant', text: text, timestamp: now.toISOString() });
 }
 
 let chatInterimDiv = null;
@@ -1714,7 +2179,7 @@ function chatShowError(msg) {
     const div = document.createElement('div');
     div.className = 'chat-msg';
     div.style.cssText = 'align-self:center; background:#7f1d1d; color:#fca5a5; font-size:12px; padding:8px 14px;';
-    div.textContent = '⚠ ' + msg;
+    div.textContent = msg;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
     setTimeout(() => div.remove(), 5000);
@@ -1729,15 +2194,15 @@ function chatUpdateStatus(state) {
         header.textContent = 'Online';
     } else if (state === 'listening') {
         bar.classList.add('visible', 'listening');
-        bar.textContent = '🎤 Listening...';
+        bar.textContent = 'Listening...';
         header.textContent = 'On call';
     } else if (state === 'thinking') {
         bar.classList.add('visible', 'thinking');
-        bar.textContent = '💭 Thinking...';
+        bar.textContent = 'Thinking...';
         header.textContent = 'On call';
     } else if (state === 'speaking') {
         bar.classList.add('visible', 'speaking');
-        bar.textContent = '🔊 Speaking...';
+        bar.textContent = 'Speaking...';
         header.textContent = 'On call';
     }
 }
@@ -1775,7 +2240,7 @@ function updatePublishDirtyState() {
     // For unpublished: light up only when changes made
     if (isDirty) {
         btn.classList.add('dirty');
-        btn.textContent = '💾 Save & Publish';
+        btn.textContent = 'Save & Publish';
     } else {
         btn.classList.remove('dirty');
         btn.textContent = 'Save & Publish';
@@ -1790,70 +2255,413 @@ function showToast(msg, type) {
 }
 
 // ═══════════════════════════════════════════════
+// PHONE NUMBERS PAGE (Twilio & Vobiz)
+// ═══════════════════════════════════════════════
+
+async function loadPhonePage() {
+    try {
+        const data = await apiGet('/api/phone-providers');
+        if (data.twilio) {
+            const badge = document.getElementById('twilioConnBadge');
+            if (data.twilio._connected) {
+                badge.textContent = 'CONNECTED';
+                badge.style.background = '#052e16';
+                badge.style.color = '#22c55e';
+                document.getElementById('twilioSidInput').value = data.twilio.account_sid || '';
+                document.getElementById('twilioTokenInput').value = data.twilio.auth_token || '';
+                document.getElementById('twilioDiscBtn').style.display = 'block';
+                document.getElementById('twilioNumbersPanel').style.display = 'block';
+                refreshNumbers('twilio');
+            }
+        }
+        if (data.vobiz) {
+            const badge = document.getElementById('vobizConnBadge');
+            if (data.vobiz._connected) {
+                badge.textContent = 'CONNECTED';
+                badge.style.background = '#052e16';
+                badge.style.color = '#22c55e';
+                document.getElementById('vobizAuthIdInput').value = data.vobiz.auth_id || '';
+                document.getElementById('vobizTokenInput').value = data.vobiz.auth_token || '';
+                document.getElementById('vobizDiscBtn').style.display = 'block';
+                document.getElementById('vobizNumbersPanel').style.display = 'block';
+                refreshNumbers('vobiz');
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load phone providers', e);
+    }
+}
+
+async function connectProvider(provider) {
+    const statusEl = document.getElementById(provider + 'Status');
+    const btn = document.getElementById(provider + 'ConnBtn');
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+    statusEl.style.display = 'block';
+    statusEl.style.background = '#1e293b';
+    statusEl.style.color = '#9ca3af';
+    statusEl.textContent = 'Testing connection...';
+
+    let body = {};
+    if (provider === 'twilio') {
+        body = { account_sid: document.getElementById('twilioSidInput').value.trim(), auth_token: document.getElementById('twilioTokenInput').value.trim() };
+    } else if (provider === 'vobiz') {
+        body = { auth_id: document.getElementById('vobizAuthIdInput').value.trim(), auth_token: document.getElementById('vobizTokenInput').value.trim() };
+    }
+
+    try {
+        const resp = await fetch(API + '/api/phone-providers/' + provider, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+            statusEl.style.background = '#052e16';
+            statusEl.style.color = '#22c55e';
+            statusEl.textContent = data.message;
+            const badge = document.getElementById(provider + 'ConnBadge');
+            badge.textContent = 'CONNECTED';
+            badge.style.background = '#052e16';
+            badge.style.color = '#22c55e';
+            document.getElementById(provider + 'DiscBtn').style.display = 'block';
+            document.getElementById(provider + 'NumbersPanel').style.display = 'block';
+            if (data.numbers) renderPhoneNumbers(provider, data.numbers);
+        } else {
+            statusEl.style.background = '#450a0a';
+            statusEl.style.color = '#ef4444';
+            statusEl.textContent = 'Connection failed: ' + (data.error || 'Connection failed');
+        }
+    } catch (e) {
+        statusEl.style.background = '#450a0a';
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = 'Network error: ' + e.message;
+    }
+    btn.disabled = false;
+    btn.textContent = 'Connect ' + (provider === 'twilio' ? 'Twilio' : 'Vobiz');
+}
+
+async function disconnectProvider(provider) {
+    if (!confirm('Disconnect ' + provider + '? Saved credentials will be removed.')) return;
+    try {
+        await fetch(API + '/api/phone-providers/' + provider, { method: 'DELETE' });
+        const badge = document.getElementById(provider + 'ConnBadge');
+        badge.textContent = 'NOT CONNECTED';
+        badge.style.background = '#450a0a';
+        badge.style.color = '#ef4444';
+        document.getElementById(provider + 'DiscBtn').style.display = 'none';
+        document.getElementById(provider + 'NumbersPanel').style.display = 'none';
+        document.getElementById(provider + 'Status').style.display = 'none';
+        if (provider === 'twilio') {
+            document.getElementById('twilioSidInput').value = '';
+            document.getElementById('twilioTokenInput').value = '';
+        } else {
+            document.getElementById('vobizAuthIdInput').value = '';
+            document.getElementById('vobizTokenInput').value = '';
+        }
+    } catch (e) {
+        console.error('Disconnect error', e);
+    }
+}
+
+async function refreshNumbers(provider) {
+    const listEl = document.getElementById(provider + 'NumbersList');
+    listEl.innerHTML = '<div style="color:#6b7280; font-size:12px;">Loading numbers...</div>';
+    try {
+        const data = await apiGet('/api/phone-numbers/' + provider);
+        if (data.numbers) renderPhoneNumbers(provider, data.numbers);
+        else listEl.innerHTML = '<div style="color:#ef4444; font-size:12px;">Failed to load</div>';
+    } catch (e) {
+        listEl.innerHTML = '<div style="color:#ef4444; font-size:12px;">Error: ' + escHtml(e.message) + '</div>';
+    }
+}
+
+function renderPhoneNumbers(provider, numbers) {
+    const listEl = document.getElementById(provider + 'NumbersList');
+    if (!numbers || numbers.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#4b5563; font-size:12px;">No phone numbers found on this account</div>';
+        return;
+    }
+    listEl.innerHTML = numbers.map(n => {
+        const num = n.phone_number || n.number || '';
+        const name = n.friendly_name || n.name || '';
+        const caps = n.capabilities ? Object.keys(n.capabilities).filter(k => n.capabilities[k]).map(k => '<span style="background:#1f2937; padding:1px 6px; border-radius:3px; font-size:9px; color:#9ca3af; text-transform:uppercase;">' + k + '</span>').join(' ') : '';
+        return '<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid #1e2030;">' +
+            '<div style="width:32px; height:32px; background:#1f2937; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg style="width:16px; height:16px; fill:none; stroke:#9ca3af; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>' +
+            '<div style="flex:1; min-width:0;">' +
+            '<div style="font-size:14px; font-weight:600; color:#e1e1e6; font-family:monospace;">' + escHtml(num) + '</div>' +
+            (name ? '<div style="font-size:11px; color:#6b7280;">' + escHtml(name) + '</div>' : '') +
+            '</div>' +
+            (caps ? '<div style="display:flex; gap:4px;">' + caps + '</div>' : '') +
+            '</div>';
+    }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// CALL LOGS PAGE
+// ═══════════════════════════════════════════════
+
+let callLogsData = [];
+let callLogsFiltered = [];
+
+async function loadCallLogs() {
+    try {
+        const data = await apiGet('/api/call-logs');
+        callLogsData = data.logs || [];
+        // Update stats
+        const s = data.stats || {};
+        document.getElementById('statTotal').textContent = s.total_calls || 0;
+        document.getElementById('statAnswered').textContent = s.answered || 0;
+        document.getElementById('statUnanswered').textContent = s.unanswered || 0;
+        document.getElementById('statDuration').textContent = formatDurationShort(s.total_duration || 0);
+        // Populate assistant filter
+        const asel = document.getElementById('clFilterAssistant');
+        const curVal = asel.value;
+        asel.innerHTML = '<option value="">All</option>';
+        const seen = {};
+        callLogsData.forEach(c => {
+            if (c.assistant_id && !seen[c.assistant_id]) {
+                seen[c.assistant_id] = true;
+                const a = assistants.find(x => x.id === c.assistant_id);
+                asel.innerHTML += '<option value="' + c.assistant_id + '">' + escHtml(a ? a.name : c.assistant_id) + '</option>';
+            }
+        });
+        if (curVal) asel.value = curVal;
+        applyCallLogFilters();
+    } catch (e) {
+        console.error('Failed to load call logs', e);
+    }
+}
+
+function applyCallLogFilters() {
+    const dateVal = document.getElementById('clFilterDate').value;
+    const assistantVal = document.getElementById('clFilterAssistant').value;
+    const phoneVal = (document.getElementById('clFilterPhone').value || '').trim().toLowerCase();
+    const typeVal = document.getElementById('clFilterType').value;
+    const statusVal = document.getElementById('clFilterStatus').value;
+
+    callLogsFiltered = callLogsData.filter(c => {
+        if (dateVal) {
+            const d = c.created_at ? c.created_at.substring(0, 10) : '';
+            if (d !== dateVal) return false;
+        }
+        if (assistantVal && c.assistant_id !== assistantVal) return false;
+        if (phoneVal && !(c.phone_number || '').toLowerCase().includes(phoneVal)) return false;
+        if (typeVal && (c.call_type || 'outbound') !== typeVal) return false;
+        if (statusVal && c.status !== statusVal) return false;
+        return true;
+    });
+    renderCallLogsTable();
+}
+
+function renderCallLogsTable() {
+    const tbody = document.getElementById('clTableBody');
+    if (callLogsFiltered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#4b5563;"><div style="opacity:0.3; margin-bottom:8px;"><svg style="width:28px; height:28px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>No calls match your filters</td></tr>';
+        return;
+    }
+    tbody.innerHTML = callLogsFiltered.map((c, idx) => {
+        const statusColors = { 'completed': '#22c55e', 'busy': '#ef4444', 'failed': '#ef4444', 'no-answer': '#f59e0b', 'queued': '#22d3ee', 'initiated': '#22d3ee', 'ringing': '#22d3ee', 'in-progress': '#3b82f6', 'canceled': '#6b7280' };
+        const color = statusColors[c.status] || '#6b7280';
+        const dur = c.duration ? formatDuration(parseInt(c.duration)) : '--';
+        const time = c.created_at ? new Date(c.created_at).toLocaleString() : '--';
+        const hasT = c.conversation && c.conversation.length > 0;
+        const callType = (c.call_type || 'outbound');
+        const typeBg = callType === 'chat' ? '#1e3a5f' : '#0c2a38';
+        const typeColor = callType === 'chat' ? '#60a5fa' : '#22d3ee';
+        return '<tr onclick="openCallLogDetail(' + idx + ')">' +
+            '<td><span class="cl-badge" style="background:' + typeBg + ';color:' + typeColor + ';">' + (callType === 'chat' ? 'Chat' : 'Call') + '</span></td>' +
+            '<td style="font-weight:500;">' + escHtml(c.customer_name || '--') + '</td>' +
+            '<td style="font-family:monospace; font-size:12px;">' + escHtml(c.phone_number || '--') + '</td>' +
+            '<td><span class="cl-badge" style="background:' + color + '22;color:' + color + ';">' + (c.status || 'unknown').toUpperCase() + '</span></td>' +
+            '<td>' + dur + '</td>' +
+            '<td style="color:#6b7280; font-size:12px;">' + time + '</td>' +
+            '<td>' + (hasT ? '<span style="color:#22d3ee;"><svg style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>' : '<span style="color:#2a2d3a;">—</span>') + '</td>' +
+            '</tr>';
+    }).join('');
+}
+
+function formatDuration(seconds) {
+    if (!seconds || seconds <= 0) return '0s';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) return mins + 'm ' + secs + 's';
+    return secs + 's';
+}
+
+function formatDurationShort(seconds) {
+    if (!seconds || seconds <= 0) return '0m';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (hrs > 0) return hrs + 'h ' + mins + 'm';
+    return mins + 'm';
+}
+
+function openCallLogDetail(idx) {
+    const c = callLogsFiltered[idx];
+    if (!c) return;
+
+    const statusColors = { 'completed': '#22c55e', 'busy': '#ef4444', 'failed': '#ef4444', 'no-answer': '#f59e0b', 'queued': '#22d3ee', 'initiated': '#22d3ee', 'ringing': '#22d3ee', 'in-progress': '#3b82f6', 'canceled': '#6b7280' };
+    const color = statusColors[c.status] || '#6b7280';
+    const time = c.created_at ? new Date(c.created_at).toLocaleString() : '--';
+    const endTime = c.ended_at ? new Date(c.ended_at).toLocaleString() : '--';
+    const dur = c.duration ? formatDuration(parseInt(c.duration)) : '--';
+    const assistant = c.assistant_id ? assistants.find(a => a.id === c.assistant_id) : null;
+    const assistantName = assistant ? assistant.name : (c.assistant_id || 'Default Voice Agent');
+    const callType = c.call_type || 'outbound';
+
+    document.getElementById('clDetailTitle').textContent = (callType === 'chat' ? 'Chat' : 'Call') + ' — ' + (c.customer_name || c.phone_number || 'Unknown');
+
+    let html = '';
+    // Info cards
+    html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">';
+    html += _detailCard('Status', '<span style="color:' + color + ';">' + (c.status || 'unknown').toUpperCase() + '</span>');
+    html += _detailCard('Duration', dur);
+    html += _detailCard('Type', callType === 'chat' ? 'Chat' : 'Outbound');
+    html += _detailCard('Assistant', escHtml(assistantName));
+    html += _detailCard('Started', time);
+    html += _detailCard('Ended', endTime);
+    if (callType !== 'chat') {
+        html += _detailCard('Phone', escHtml(c.phone_number || '--'));
+        html += _detailCard('From', escHtml(c.from_number || '--'));
+    }
+    html += '</div>';
+
+    if (c.twilio_sid) {
+        html += '<div style="background:#1f2937; border-radius:8px; padding:10px 14px; margin-bottom:20px; font-size:11px; color:#6b7280;">SID: <span style="color:#e1e1e6; font-family:monospace; word-break:break-all;">' + escHtml(c.twilio_sid) + '</span></div>';
+    }
+
+    // Transcript
+    html += '<h3 style="font-size:14px; font-weight:600; color:#e1e1e6; margin-bottom:12px;">Transcript</h3>';
+    if (c.conversation && c.conversation.length > 0) {
+        c.conversation.forEach(msg => {
+            const isUser = msg.role === 'user';
+            const msgTime = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : '';
+            html += '<div style="display:flex; gap:8px; margin-bottom:10px; flex-direction:' + (isUser ? 'row-reverse' : 'row') + ';">';
+            html += '<div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; background:' + (isUser ? '#1f6feb' : '#2a2d3a') + ';"><svg style="width:14px;height:14px;fill:none;stroke:#e1e1e6;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24">' + (isUser ? '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>' : '<path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><circle cx="12" cy="17" r="4"/>') + '</svg></div>';
+            html += '<div style="max-width:75%; padding:8px 12px; border-radius:10px; font-size:12px; line-height:1.5; background:' + (isUser ? '#1f3a5f' : '#252838') + '; color:#e1e1e6;">';
+            html += escHtml(msg.text || msg.content || '');
+            if (msgTime) html += '<div style="font-size:9px; color:#4b5563; margin-top:2px;">' + msgTime + '</div>';
+            html += '</div></div>';
+        });
+    } else {
+        html += '<div style="text-align:center; color:#4b5563; padding:20px; font-size:12px;">No transcript available</div>';
+    }
+
+    document.getElementById('clDetailBody').innerHTML = html;
+    document.getElementById('clDetailOverlay').classList.add('open');
+    document.getElementById('clDetailPanel').classList.add('open');
+}
+
+function _detailCard(label, value) {
+    return '<div style="background:#1f2937; border-radius:8px; padding:10px 12px;"><div style="font-size:9px; font-weight:600; color:#6b7280; text-transform:uppercase; margin-bottom:3px;">' + label + '</div><div style="font-size:13px; color:#e1e1e6;">' + value + '</div></div>';
+}
+
+function closeCallLogDetail() {
+    document.getElementById('clDetailOverlay').classList.remove('open');
+    document.getElementById('clDetailPanel').classList.remove('open');
+}
+
+async function migrateLogsToSupabase() {
+    const btn = document.getElementById('migrateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Migrating...';
+    try {
+        const resp = await fetch(API + '/api/migrate-logs', { method: 'POST' });
+        const data = await resp.json();
+        if (resp.ok) {
+            btn.textContent = 'Done!';
+            showToast('Migrated ' + (data.migrated || 0) + ' logs, ' + (data.skipped || 0) + ' skipped');
+            setTimeout(() => { btn.textContent = 'Migrate Local \u2192 Supabase'; btn.disabled = false; }, 3000);
+            loadCallLogs();
+        } else {
+            btn.textContent = 'Failed';
+            showToast(data.error || 'Migration failed');
+            setTimeout(() => { btn.textContent = 'Migrate Local \u2192 Supabase'; btn.disabled = false; }, 3000);
+        }
+    } catch (e) {
+        btn.textContent = 'Error';
+        showToast('Network error: ' + e.message);
+        setTimeout(() => { btn.textContent = 'Migrate Local \u2192 Supabase'; btn.disabled = false; }, 3000);
+    }
+}
+
+// ═══════════════════════════════════════════════
 // OUTBOUND CALL PAGE
 // ═══════════════════════════════════════════════
 
 async function loadCallConfig() {
     try {
         const config = await apiGet('/api/call-config');
-        // Public URL status
+        // Public URL status (may be commented out in HTML)
         const purlEl = document.getElementById('publicUrlStatus');
         const purlBanner = document.getElementById('publicUrlBanner');
         const purlBadge = document.getElementById('publicUrlStatusBadge');
         const purlInput = document.getElementById('publicUrlInput');
-        if (config.public_url && config.public_url.configured) {
-            purlEl.innerHTML = '<span style="color:#22c55e;">✅ ' + config.public_url.url + '</span>';
-            purlBanner.style.background = '#052e16';
-            purlBanner.style.borderColor = '#166534';
-            purlBadge.textContent = 'CONNECTED';
-            purlBadge.style.background = '#052e16';
-            purlBadge.style.color = '#22c55e';
-            purlInput.value = config.public_url.url;
-        } else {
-            purlEl.innerHTML = '<span style="color:#ef4444;">❌ Not set</span>';
-            purlBanner.style.background = '#1c1507';
-            purlBanner.style.borderColor = '#854d0e';
-            purlBadge.textContent = 'NOT SET';
-            purlBadge.style.background = '#450a0a';
-            purlBadge.style.color = '#ef4444';
+        if (purlEl && purlBanner && purlBadge && purlInput) {
+            if (config.public_url && config.public_url.configured) {
+                purlEl.innerHTML = '<span style="color:#22c55e;">Connected — ' + config.public_url.url + '</span>';
+                purlBanner.style.background = '#052e16';
+                purlBanner.style.borderColor = '#166534';
+                purlBadge.textContent = 'CONNECTED';
+                purlBadge.style.background = '#052e16';
+                purlBadge.style.color = '#22c55e';
+                purlInput.value = config.public_url.url;
+            } else {
+                purlEl.innerHTML = '<span style="color:#ef4444;">Not set</span>';
+                purlBanner.style.background = '#1c1507';
+                purlBanner.style.borderColor = '#854d0e';
+                purlBadge.textContent = 'NOT SET';
+                purlBadge.style.background = '#450a0a';
+                purlBadge.style.color = '#ef4444';
+            }
         }
         // Twilio status
         const twilioEl = document.getElementById('twilioStatus');
-        if (config.twilio && config.twilio.configured) {
-            twilioEl.innerHTML = '<span style="color:#22d3ee;">✅ Connected</span>' + (config.twilio.phone_number ? '<br><span style="font-size:10px;color:#6b7280;">' + config.twilio.phone_number + '</span>' : '');
-        } else if (config.twilio && !config.twilio.sdk_installed) {
-            twilioEl.innerHTML = '<span style="color:#f59e0b;">⚠️ SDK missing</span>';
-        } else {
-            twilioEl.innerHTML = '<span style="color:#ef4444;">❌ Not configured</span>';
+        if (twilioEl) {
+            if (config.twilio && config.twilio.configured) {
+                twilioEl.innerHTML = '<span style="color:#22d3ee;">Connected</span>' + (config.twilio.phone_number ? '<br><span style="font-size:10px;color:#6b7280;">' + config.twilio.phone_number + '</span>' : '');
+            } else if (config.twilio && !config.twilio.sdk_installed) {
+                twilioEl.innerHTML = '<span style="color:#f59e0b;">SDK missing</span>';
+            } else {
+                twilioEl.innerHTML = '<span style="color:#ef4444;">Not configured</span>';
+            }
         }
         // Deepgram status
         const dgEl = document.getElementById('deepgramCallStatus');
-        if (config.deepgram && config.deepgram.configured) {
-            dgEl.innerHTML = '<span style="color:#22d3ee;">✅ Ready</span>';
-        } else {
-            dgEl.innerHTML = '<span style="color:#ef4444;">❌ Not configured</span>';
+        if (dgEl) {
+            if (config.deepgram && config.deepgram.configured) {
+                dgEl.innerHTML = '<span style="color:#22d3ee;">Ready</span>';
+            } else {
+                dgEl.innerHTML = '<span style="color:#ef4444;">Not configured</span>';
+            }
         }
         // OpenAI status
         const oaiEl = document.getElementById('openaiCallStatus');
-        if (config.openai && config.openai.configured) {
-            oaiEl.innerHTML = '<span style="color:#22d3ee;">✅ Ready</span>';
-        } else {
-            oaiEl.innerHTML = '<span style="color:#ef4444;">❌ Not configured</span>';
+        if (oaiEl) {
+            if (config.openai && config.openai.configured) {
+                oaiEl.innerHTML = '<span style="color:#22d3ee;">Ready</span>';
+            } else {
+                oaiEl.innerHTML = '<span style="color:#ef4444;">Not configured</span>';
+            }
         }
         // WebSocket status
         const wsEl = document.getElementById('wsCallStatus');
-        if (config.websocket && config.websocket.available) {
-            wsEl.innerHTML = '<span style="color:#22d3ee;">✅ Ready</span>';
-        } else {
-            wsEl.innerHTML = '<span style="color:#ef4444;">❌ Not available</span>';
+        if (wsEl) {
+            if (config.websocket && config.websocket.available) {
+                wsEl.innerHTML = '<span style="color:#22d3ee;">Ready</span>';
+            } else {
+                wsEl.innerHTML = '<span style="color:#ef4444;">Not available</span>';
+            }
         }
         // Populate assistant dropdown
         if (config.assistants) {
             const sel = document.getElementById('callAssistant');
-            sel.innerHTML = '<option value="">Default Voice Agent</option>';
-            config.assistants.forEach(a => {
-                sel.innerHTML += '<option value="' + a.id + '">' + escHtml(a.name) + '</option>';
-            });
+            if (sel) {
+                sel.innerHTML = '<option value="">Default Voice Agent</option>';
+                config.assistants.forEach(a => {
+                    sel.innerHTML += '<option value="' + a.id + '">' + escHtml(a.name) + '</option>';
+                });
+            }
         }
     } catch (e) {
         console.error('Failed to load call config', e);
@@ -1866,7 +2674,7 @@ async function loadCallLog() {
         const calls = data.calls || [];
         const container = document.getElementById('callLogList');
         if (calls.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#4b5563; padding:40px 0; font-size:13px;"><div style="font-size:36px; opacity:0.3; margin-bottom:12px;">📞</div>No calls yet. Make your first outbound call!</div>';
+            container.innerHTML = '<div style="text-align:center; color:#4b5563; padding:40px 0; font-size:13px;"><div style="opacity:0.3; margin-bottom:12px;"><svg style="width:36px; height:36px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>No calls yet. Make your first outbound call!</div>';
             return;
         }
         container.innerHTML = calls.map(c => {
@@ -1902,7 +2710,7 @@ async function makeOutboundCall() {
     const btn = document.getElementById('makeCallBtn');
     btn.disabled = true;
     btn.style.opacity = '0.6';
-    btn.innerHTML = '⏳ Placing call...';
+    btn.innerHTML = 'Placing call...';
 
     try {
         const body = {
@@ -1917,7 +2725,7 @@ async function makeOutboundCall() {
         const result = await apiPost('/api/outbound-call', body);
 
         if (result.success) {
-            showCallResult(true, '✅ Call initiated to ' + phoneNumber + ' — Your AI voice agent is handling the conversation!' + (result.twilio_sid ? ' (SID: ' + result.twilio_sid + ')' : ''));
+            showCallResult(true, 'Call initiated to ' + phoneNumber + ' — Your AI voice agent is handling the conversation!' + (result.twilio_sid ? ' (SID: ' + result.twilio_sid + ')' : ''));
             loadCallLog();
         } else {
             showCallResult(false, result.error || 'Call failed');
@@ -1927,7 +2735,7 @@ async function makeOutboundCall() {
     } finally {
         btn.disabled = false;
         btn.style.opacity = '1';
-        btn.innerHTML = '📞 Call with AI Voice Agent';
+        btn.innerHTML = 'Call with AI Voice Agent';
     }
 }
 
@@ -1953,7 +2761,7 @@ async function setPublicUrl() {
     try {
         const result = await apiPost('/api/set-public-url', { url });
         if (result.success) {
-            showPublicUrlResult(true, '✅ Public URL set: ' + result.url);
+            showPublicUrlResult(true, 'Public URL set: ' + result.url);
             loadCallConfig();  // Refresh status cards
         } else {
             showPublicUrlResult(false, result.error || 'Failed to set URL');

@@ -1,6 +1,106 @@
 {
   "calls": [
     {
+      "id": "0cc37c45-76c",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritik Gupta",
+      "assistant_id": "f4ba8b52-a744-f4cb-341ed450-bf7",
+      "from_number": "+19086330783",
+      "twilio_sid": "CA2a4b7f36daa66f57de9b4280f4cd0975",
+      "status": "completed",
+      "call_type": "outbound",
+      "created_at": "2026-03-01T16:07:28.884779",
+      "duration": "105",
+      "conversation": [
+        {
+          "role": "user",
+          "text": "Tell me about, Luis.",
+          "timestamp": "2026-03-01T16:07:45.631623"
+        },
+        {
+          "role": "assistant",
+          "text": "Hello! Welcome to Levi's customer support. I'm Neha, and I'm here to assist you. May I please have your name so I can help you better? \n\nIf you meant Levi's, I'd be happy to provide you with information about our",
+          "timestamp": "2026-03-01T16:08:03.355410"
+        },
+        {
+          "role": "user",
+          "text": "My name is.",
+          "timestamp": "2026-03-01T16:08:06.044115"
+        },
+        {
+          "role": "assistant",
+          "text": "Hello! Welcome to Levi's customer support. I'm Neha, and I'm here to assist you. May I please have your name so I can help you better?",
+          "timestamp": "2026-03-01T16:08:12.081440"
+        },
+        {
+          "role": "user",
+          "text": "My name is.",
+          "timestamp": "2026-03-01T16:08:22.640550"
+        },
+        {
+          "role": "assistant",
+          "text": "I apologize for any confusion. Could you please share your name so I can assist you better?",
+          "timestamp": "2026-03-01T16:08:29.032960"
+        },
+        {
+          "role": "user",
+          "text": "My name is Ritik.",
+          "timestamp": "2026-03-01T16:08:38.241153"
+        },
+        {
+          "role": "assistant",
+          "text": "",
+          "timestamp": "2026-03-01T16:08:38.896783"
+        },
+        {
+          "role": "user",
+          "text": "Hello. My name is.",
+          "timestamp": "2026-03-01T16:08:41.929057"
+        },
+        {
+          "role": "assistant",
+          "text": "Hello, Ritik! Welcome to Levi's customer support. I'm Neha, and I'm here to assist you. How can I help you with your Levi's purchase today?",
+          "timestamp": "2026-03-01T16:08:56.833508"
+        },
+        {
+          "role": "user",
+          "text": "I want to know about your return policy.",
+          "timestamp": "2026-03-01T16:09:07.789359"
+        },
+        {
+          "role": "assistant",
+          "text": "Certainly, Ritik! Our return policy allows returns within 7 days of delivery. The item must be unworn, unwashed, and have all original tags attached. Please note that Final Sale items can only be exchanged, not returned. Also,",
+          "timestamp": "2026-03-01T16:09:11.609224"
+        }
+      ],
+      "ended_at": "2026-03-01T16:09:21.518286"
+    },
+    {
+      "id": "db6e5280-073",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": null,
+      "from_number": "+19086330783",
+      "twilio_sid": "CAfceeac17076e3337fac41a909f15ec6c",
+      "status": "busy",
+      "created_at": "2026-02-27T19:28:16.594478",
+      "duration": "0"
+    },
+    {
+      "id": "ef831c51-50b",
+      "provider": "voice-agent",
+      "phone_number": "+916393828666",
+      "customer_name": "Ritk",
+      "assistant_id": null,
+      "from_number": "+19086330783",
+      "twilio_sid": "CA4fa730fe6b70217f4fa9b0d4142c804a",
+      "status": "completed",
+      "created_at": "2026-02-27T19:27:06.556868",
+      "duration": "66"
+    },
+    {
       "id": "09df5f02-c91",
       "provider": "voice-agent",
       "phone_number": "+916393828666",
